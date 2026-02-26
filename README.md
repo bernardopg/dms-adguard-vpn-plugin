@@ -141,7 +141,7 @@ To contribute a new language, see:
 1. Tag release:
 
 ```bash
-git tag v1.0.0
+git tag v1.1.0
 git push origin main --tags
 ```
 
