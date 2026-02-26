@@ -2,6 +2,10 @@
 
 Widget plugin for DankMaterialShell that integrates with `adguardvpn-cli` to monitor connection health, apply configuration, and control VPN sessions directly from DankBar.
 
+## Screenshot
+
+![AdGuard VPN plugin screenshot](./docs/screenshot.png)
+
 ## Features
 
 - Live status monitoring (`status`, `license`, `config show`)
