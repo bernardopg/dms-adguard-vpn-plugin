@@ -1,0 +1,23 @@
+{
+    "id": "adguardVPplugin",
+    "name": "AdGuard VPN",
+    "description": "Control, configure, and monitor adguardvpn-cli directly from DankBar",
+    "version": "1.0.0",
+    "author": "Bernardo Gomes",
+    "type": "widget",
+    "capabilities": [
+        "vpn",
+        "network",
+        "dankbar-widget"
+    ],
+    "component": "./AdGuardVpnWidget.qml",
+    "settings": "./AdGuardVpnSettings.qml",
+    "icon": "shield_lock",
+    "requires_dms": ">=1.4.0",
+    "license": "MIT",
+    "permissions": [
+        "settings_read",
+        "settings_write",
+        "process"
+    ]
+}
