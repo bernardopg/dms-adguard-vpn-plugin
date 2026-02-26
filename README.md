@@ -33,7 +33,7 @@ AdGuard CLI install guide: <https://github.com/AdguardTeam/AdGuardVPNCLI/>
 1. Clone this repository to your DMS plugins directory:
 
 ```bash
-git clone https://github.com/<your-user>/dms-adguard-vpn-plugin.git \
+git clone https://github.com/bernardopg/dms-adguard-vpn-plugin.git \
   ~/.config/DankMaterialShell/plugins/adguardVPplugin
 ```
 
