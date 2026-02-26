@@ -1,1 +1,2 @@
 singleton AdGuardVpnService 1.0 AdGuardVpnService.qml
+singleton AdGuardVpnI18n 1.0 AdGuardVpnI18n.qml

@@ -16,6 +16,10 @@ PluginComponent {
     property string dnsInputText: ""
     property bool showLocationInBar: pluginData.showLocationInBar !== undefined ? pluginData.showLocationInBar : true
 
+    function t(key, fallback, params) {
+        return AdGuardVpnI18n.tr(key, fallback, params);
+    }
+
     readonly property string barIconName: {
         if (!AdGuardVpnService.cliAvailable) {
             return "warning";
@@ -38,26 +42,26 @@ PluginComponent {
 
     readonly property string barText: {
         if (!AdGuardVpnService.cliAvailable) {
-            return "CLI";
+            return root.t("bar.cli", "CLI");
         }
         if (AdGuardVpnService.commandRunning) {
-            return "...";
+            return root.t("bar.pending", "...");
         }
         if (AdGuardVpnService.isConnected) {
-            return AdGuardVpnService.connectedLocation || "Connected";
+            return AdGuardVpnService.connectedLocation || root.t("bar.connected_short", "Connected");
         }
-        return "Off";
+        return root.t("bar.off", "Off");
     }
 
     function formatTimestamp(ms) {
         if (!ms || ms <= 0) {
-            return "never";
+            return root.t("time.never", "never");
         }
 
         try {
             return new Date(ms).toLocaleTimeString();
         } catch (error) {
-            return "unknown";
+            return root.t("time.unknown", "unknown");
         }
     }
 
@@ -218,10 +222,10 @@ PluginComponent {
         PopoutComponent {
             id: popout
 
-            headerText: "AdGuard VPN"
+            headerText: root.t("app.title", "AdGuard VPN")
             detailsText: AdGuardVpnService.cliAvailable
                 ? AdGuardVpnService.statusSummary
-                : "adguardvpn-cli not available"
+                : root.t("popout.details.cli_unavailable", "adguardvpn-cli not available")
             showCloseButton: true
 
             Item {
@@ -269,8 +273,16 @@ PluginComponent {
                                     StyledText {
                                         width: parent.width - 26
                                         text: AdGuardVpnService.isConnected
-                                            ? `Connected to ${root.safeText(AdGuardVpnService.connectedLocation, "location unknown")}`
-                                            : root.safeText(AdGuardVpnService.statusSummary, "Disconnected")
+                                            ? root.t("summary.connected_to", "Connected to {location}", {
+                                                location: root.safeText(
+                                                    AdGuardVpnService.connectedLocation,
+                                                    root.t("summary.location_unknown", "location unknown")
+                                                )
+                                            })
+                                            : root.safeText(
+                                                AdGuardVpnService.statusSummary,
+                                                root.t("status.disconnected", "Disconnected")
+                                            )
                                         color: Theme.surfaceText
                                         font.pixelSize: Theme.fontSizeMedium
                                         font.weight: Font.Bold
@@ -289,7 +301,12 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: `Account: ${root.safeText(AdGuardVpnService.accountEmail, "not logged")}`
+                                    text: root.t("summary.account", "Account: {value}", {
+                                        value: root.safeText(
+                                            AdGuardVpnService.accountEmail,
+                                            root.t("summary.not_logged", "not logged")
+                                        )
+                                    })
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                     elide: Text.ElideRight
@@ -297,7 +314,13 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: `Plan: ${root.safeText(AdGuardVpnService.accountTier, "unknown")}  •  Devices: ${AdGuardVpnService.maxDevices || "-"}`
+                                    text: root.t("summary.plan_devices", "Plan: {plan}  •  Devices: {devices}", {
+                                        plan: root.safeText(
+                                            AdGuardVpnService.accountTier,
+                                            root.t("time.unknown", "unknown")
+                                        ),
+                                        devices: (AdGuardVpnService.maxDevices || "-")
+                                    })
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                 }
@@ -305,14 +328,20 @@ PluginComponent {
                                 StyledText {
                                     visible: !!AdGuardVpnService.subscriptionRenewDate
                                     width: parent.width
-                                    text: `Renewal: ${AdGuardVpnService.subscriptionRenewDate}`
+                                    text: root.t("summary.renewal", "Renewal: {date}", {
+                                        date: AdGuardVpnService.subscriptionRenewDate
+                                    })
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                 }
 
                                 StyledText {
                                     width: parent.width
-                                    text: `Mode: ${root.safeText(AdGuardVpnService.currentMode, "-")}  •  Protocol: ${root.safeText(AdGuardVpnService.currentProtocolRaw || AdGuardVpnService.currentProtocol, "-")}  •  Channel: ${AdGuardVpnService.currentUpdateChannel}`
+                                    text: root.t("summary.mode_protocol_channel", "Mode: {mode}  •  Protocol: {protocol}  •  Channel: {channel}", {
+                                        mode: root.safeText(AdGuardVpnService.currentMode, "-"),
+                                        protocol: root.safeText(AdGuardVpnService.currentProtocolRaw || AdGuardVpnService.currentProtocol, "-"),
+                                        channel: AdGuardVpnService.currentUpdateChannel
+                                    })
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                     wrapMode: Text.WordWrap
@@ -320,7 +349,10 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: `CLI: ${root.safeText(AdGuardVpnService.cliVersion, "unknown")}  •  Last sync: ${root.formatTimestamp(AdGuardVpnService.lastRefreshMs)}`
+                                    text: root.t("summary.cli_last_sync", "CLI: {version}  •  Last sync: {time}", {
+                                        version: root.safeText(AdGuardVpnService.cliVersion, root.t("time.unknown", "unknown")),
+                                        time: root.formatTimestamp(AdGuardVpnService.lastRefreshMs)
+                                    })
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                     wrapMode: Text.WordWrap
@@ -342,7 +374,7 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: "Quick Actions"
+                                    text: root.t("section.quick_actions", "Quick Actions")
                                     color: Theme.surfaceText
                                     font.pixelSize: Theme.fontSizeSmall
                                     font.weight: Font.Medium
@@ -355,7 +387,9 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: AdGuardVpnService.isConnected ? "link_off" : "link"
-                                        label: AdGuardVpnService.isConnected ? "Disconnect" : "Connect"
+                                        label: AdGuardVpnService.isConnected
+                                            ? root.t("action.disconnect", "Disconnect")
+                                            : root.t("action.connect", "Connect")
                                         active: AdGuardVpnService.isConnected
                                         actionEnabled: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning
                                         onTriggered: AdGuardVpnService.toggleConnection()
@@ -364,7 +398,7 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: "speed"
-                                        label: "Fastest"
+                                        label: root.t("action.fastest", "Fastest")
                                         actionEnabled: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning
                                         onTriggered: AdGuardVpnService.connectFastest()
                                     }
@@ -372,7 +406,7 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: "refresh"
-                                        label: "Refresh"
+                                        label: root.t("action.refresh", "Refresh")
                                         actionEnabled: !AdGuardVpnService.commandRunning
                                         onTriggered: AdGuardVpnService.refreshAll(true)
                                     }
@@ -381,7 +415,9 @@ PluginComponent {
                                 StyledText {
                                     width: parent.width
                                     visible: AdGuardVpnService.commandRunning
-                                    text: `Running: ${AdGuardVpnService.runningCommand}`
+                                    text: root.t("status.running_command", "Running: {command}", {
+                                        command: AdGuardVpnService.runningCommand
+                                    })
                                     color: Theme.primary
                                     font.pixelSize: Theme.fontSizeSmall
                                 }
@@ -402,7 +438,7 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: "Locations"
+                                    text: root.t("section.locations", "Locations")
                                     color: Theme.surfaceText
                                     font.pixelSize: Theme.fontSizeSmall
                                     font.weight: Font.Medium
@@ -411,7 +447,7 @@ PluginComponent {
                                 TextField {
                                     id: locationInput
                                     width: parent.width
-                                    placeholderText: "City, country, or ISO code (e.g. Sao Paulo / BR)"
+                                    placeholderText: root.t("locations.placeholder", "City, country, or ISO code (e.g. Sao Paulo / BR)")
                                     text: root.locationInputText
                                     selectByMouse: true
                                     color: Theme.surfaceText
@@ -434,7 +470,7 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: "near_me"
-                                        label: "Connect"
+                                        label: root.t("action.connect", "Connect")
                                         actionEnabled: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning && locationInput.text.trim().length > 0
                                         onTriggered: AdGuardVpnService.connectToLocation(locationInput.text.trim())
                                     }
@@ -442,20 +478,26 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: "save"
-                                        label: "Set Default"
+                                        label: root.t("action.set_default", "Set Default")
                                         actionEnabled: locationInput.text.trim().length > 0
                                         onTriggered: {
                                             const value = locationInput.text.trim();
                                             root.locationInputText = value;
                                             AdGuardVpnService.saveSetting("defaultLocation", value);
-                                            ToastService.showInfo("AdGuard VPN", `Default location saved: ${value}`);
+                                            ToastService.showInfo(
+                                                root.t("app.title", "AdGuard VPN"),
+                                                root.t("toast.default_location_saved", "Default location saved: {location}", { location: value })
+                                            );
                                         }
                                     }
                                 }
 
                                 StyledText {
                                     width: parent.width
-                                    text: `Top ${AdGuardVpnService.locations.length} locations • Last update: ${root.formatTimestamp(AdGuardVpnService.lastLocationsRefreshMs)}`
+                                    text: root.t("locations.top_last_update", "Top {count} locations • Last update: {time}", {
+                                        count: AdGuardVpnService.locations.length,
+                                        time: root.formatTimestamp(AdGuardVpnService.lastLocationsRefreshMs)
+                                    })
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                 }
@@ -541,7 +583,7 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: "Configuration"
+                                    text: root.t("section.configuration", "Configuration")
                                     color: Theme.surfaceText
                                     font.pixelSize: Theme.fontSizeSmall
                                     font.weight: Font.Medium
@@ -549,7 +591,7 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: "Mode"
+                                    text: root.t("config.mode", "Mode")
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                 }
@@ -579,7 +621,7 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: "Protocol"
+                                    text: root.t("config.protocol", "Protocol")
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                 }
@@ -591,7 +633,7 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: "auto_awesome"
-                                        label: "Auto"
+                                        label: root.t("settings.ip_stack.auto", "Auto")
                                         active: AdGuardVpnService.currentProtocol === "auto"
                                         actionEnabled: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning
                                         onTriggered: AdGuardVpnService.setProtocol("auto")
@@ -618,7 +660,7 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: "Update channel"
+                                    text: root.t("config.update_channel", "Update channel")
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                 }
@@ -630,7 +672,7 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: "new_releases"
-                                        label: "Release"
+                                        label: root.t("action.release", "Release")
                                         active: AdGuardVpnService.currentUpdateChannel === "release"
                                         actionEnabled: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning
                                         onTriggered: AdGuardVpnService.setUpdateChannel("release")
@@ -639,7 +681,7 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: "science"
-                                        label: "Beta"
+                                        label: root.t("action.beta", "Beta")
                                         active: AdGuardVpnService.currentUpdateChannel === "beta"
                                         actionEnabled: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning
                                         onTriggered: AdGuardVpnService.setUpdateChannel("beta")
@@ -648,7 +690,7 @@ PluginComponent {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         iconName: "bolt"
-                                        label: "Nightly"
+                                        label: root.t("action.nightly", "Nightly")
                                         active: AdGuardVpnService.currentUpdateChannel === "nightly"
                                         actionEnabled: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning
                                         onTriggered: AdGuardVpnService.setUpdateChannel("nightly")
@@ -657,7 +699,7 @@ PluginComponent {
 
                                 StyledText {
                                     width: parent.width
-                                    text: "DNS upstream"
+                                    text: root.t("config.dns_upstream", "DNS upstream")
                                     color: Theme.surfaceVariantText
                                     font.pixelSize: Theme.fontSizeSmall
                                 }
@@ -688,7 +730,7 @@ PluginComponent {
                                     ActionButton {
                                         Layout.preferredWidth: 120
                                         iconName: "check"
-                                        label: "Apply"
+                                        label: root.t("action.apply", "Apply")
                                         actionEnabled: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning && dnsInput.text.trim().length > 0
                                         onTriggered: AdGuardVpnService.setDns(dnsInput.text.trim())
                                     }

@@ -7,6 +7,7 @@ The plugin is split into three layers:
 1. UI layer (`AdGuardVpnWidget.qml`)
 2. Settings layer (`AdGuardVpnSettings.qml`)
 3. Service layer (`AdGuardVpnService.qml`, singleton)
+4. Localization layer (`AdGuardVpnI18n.qml` + `i18n/*.js`)
 
 `PluginComponent` renders bar pills and popout controls, while the singleton centralizes command execution and parser logic.
 
@@ -48,6 +49,7 @@ The plugin is split into three layers:
   - location quick-connect list
   - config controls
   - diagnostics summary
+- localized labels via `AdGuardVpnI18n.tr(...)`
 
 ## Settings Responsibilities
 

@@ -34,7 +34,7 @@ Item {
     property string runningCommand: ""
 
     property bool isConnected: false
-    property string statusSummary: "Unknown"
+    property string statusSummary: AdGuardVpnI18n.tr("status.unknown", "Unknown")
     property string connectedLocation: ""
     property string connectedMode: ""
     property string tunnelInterface: ""
@@ -62,6 +62,10 @@ Item {
 
     property double lastRefreshMs: 0
     property double lastLocationsRefreshMs: 0
+
+    function t(key, fallback, params) {
+        return AdGuardVpnI18n.tr(key, fallback, params);
+    }
 
     function asInt(value, fallback, minimum, maximum) {
         var parsed = parseInt(value, 10);
@@ -180,11 +184,11 @@ Item {
 
             if (!cliAvailable) {
                 isConnected = false;
-                statusSummary = "adguardvpn-cli unavailable";
+                statusSummary = t("status.cli_unavailable", "adguardvpn-cli unavailable");
                 connectedLocation = "";
                 connectedMode = "";
                 tunnelInterface = "";
-                lastError = clean || "Unable to run adguardvpn-cli";
+                lastError = clean || t("status.unable_run_cli", "Unable to run adguardvpn-cli");
                 return;
             }
 
@@ -200,7 +204,7 @@ Item {
 
         if (exitCode !== 0) {
             isConnected = false;
-            statusSummary = clean || "Failed to read VPN status";
+            statusSummary = clean || t("status.failed_read", "Failed to read VPN status");
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
@@ -214,7 +218,7 @@ Item {
         const lines = clean.split("\n").map(line => line.trim()).filter(Boolean);
         if (!lines.length) {
             isConnected = false;
-            statusSummary = "No status output";
+            statusSummary = t("status.no_output", "No status output");
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
@@ -229,13 +233,13 @@ Item {
             connectedLocation = connectedMatch[1].trim();
             connectedMode = connectedMatch[2].toUpperCase();
             tunnelInterface = connectedMatch[3].trim();
-            statusSummary = `Connected (${connectedLocation})`;
+            statusSummary = t("status.connected", "Connected ({location})", { location: connectedLocation });
             return;
         }
 
         if (/not\s+connected|disconnected|not\s+running|stopped/i.test(firstLine)) {
             isConnected = false;
-            statusSummary = "Disconnected";
+            statusSummary = t("status.disconnected", "Disconnected");
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
@@ -387,7 +391,7 @@ Item {
         runCli("status", ["status"], (stdout, exitCode) => {
             if (exitCode !== 0 && /not found|no such file|cannot execute/i.test(cleanOutput(stdout))) {
                 cliAvailable = false;
-                statusSummary = "adguardvpn-cli unavailable";
+                statusSummary = t("status.cli_unavailable", "adguardvpn-cli unavailable");
             }
             parseStatus(stdout, exitCode);
         });
@@ -449,13 +453,18 @@ Item {
             args.push("-6");
         }
 
-        runAction("connectFastest", args, "AdGuard VPN", "Fastest location selected");
+        runAction(
+            "connectFastest",
+            args,
+            t("app.title", "AdGuard VPN"),
+            t("toast.fastest_selected", "Fastest location selected")
+        );
     }
 
     function connectToLocation(locationText) {
         const target = (locationText || "").toString().trim();
         if (!target) {
-            ToastService.showError("AdGuard VPN", "Location is empty");
+            ToastService.showError(t("app.title", "AdGuard VPN"), t("toast.location_empty", "Location is empty"));
             return;
         }
 
@@ -466,11 +475,21 @@ Item {
             args.push("-6");
         }
 
-        runAction("connectLocation", args, "AdGuard VPN", `Connecting to ${target}`);
+        runAction(
+            "connectLocation",
+            args,
+            t("app.title", "AdGuard VPN"),
+            t("toast.connecting_to", "Connecting to {location}", { location: target })
+        );
     }
 
     function disconnect() {
-        runAction("disconnect", ["disconnect"], "AdGuard VPN", "Disconnect requested");
+        runAction(
+            "disconnect",
+            ["disconnect"],
+            t("app.title", "AdGuard VPN"),
+            t("toast.disconnect_requested", "Disconnect requested")
+        );
     }
 
     function toggleConnection() {
@@ -483,37 +502,57 @@ Item {
 
     function setMode(mode) {
         const normalized = normalizedChoice(mode, "tun", ["tun", "socks"]);
-        runAction("setMode", ["config", "set-mode", normalized], "AdGuard VPN", `Mode set to ${normalized.toUpperCase()}`);
+        runAction(
+            "setMode",
+            ["config", "set-mode", normalized],
+            t("app.title", "AdGuard VPN"),
+            t("toast.mode_set", "Mode set to {mode}", { mode: normalized.toUpperCase() })
+        );
     }
 
     function setProtocol(protocol) {
         const normalized = normalizedChoice(protocol, "auto", ["auto", "http2", "quic"]);
-        runAction("setProtocol", ["config", "set-protocol", normalized], "AdGuard VPN", `Protocol set to ${normalized}`);
+        runAction(
+            "setProtocol",
+            ["config", "set-protocol", normalized],
+            t("app.title", "AdGuard VPN"),
+            t("toast.protocol_set", "Protocol set to {protocol}", { protocol: normalized })
+        );
     }
 
     function setUpdateChannel(channel) {
         const normalized = normalizedChoice(channel, "release", ["release", "beta", "nightly"]);
-        runAction("setUpdateChannel", ["config", "set-update-channel", normalized], "AdGuard VPN", `Channel set to ${normalized}`);
+        runAction(
+            "setUpdateChannel",
+            ["config", "set-update-channel", normalized],
+            t("app.title", "AdGuard VPN"),
+            t("toast.channel_set", "Channel set to {channel}", { channel: normalized })
+        );
     }
 
     function setDns(upstream) {
         const normalized = (upstream || "").toString().trim();
         if (!normalized) {
-            ToastService.showError("AdGuard VPN", "DNS upstream cannot be empty");
+            ToastService.showError(t("app.title", "AdGuard VPN"), t("toast.dns_empty", "DNS upstream cannot be empty"));
             return;
         }
 
-        runAction("setDns", ["config", "set-dns", normalized], "AdGuard VPN", `DNS set to ${normalized}`);
+        runAction(
+            "setDns",
+            ["config", "set-dns", normalized],
+            t("app.title", "AdGuard VPN"),
+            t("toast.dns_set", "DNS set to {dns}", { dns: normalized })
+        );
     }
 
     function runAction(operation, args, toastTitle, toastMessage) {
         if (!cliAvailable) {
-            ToastService.showError("AdGuard VPN", "adguardvpn-cli is unavailable");
+            ToastService.showError(t("app.title", "AdGuard VPN"), t("toast.cli_unavailable", "adguardvpn-cli is unavailable"));
             return;
         }
 
         if (commandRunning) {
-            ToastService.showInfo("AdGuard VPN", "Another operation is running");
+            ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.operation_running", "Another operation is running"));
             return;
         }
 
@@ -529,7 +568,7 @@ Item {
             if (exitCode === 0) {
                 if (toastTitle) {
                     const firstLine = clean.split("\n").map(line => line.trim()).filter(Boolean)[0];
-                    ToastService.showInfo(toastTitle, firstLine || toastMessage || "Done");
+                    ToastService.showInfo(toastTitle, firstLine || toastMessage || t("toast.done", "Done"));
                 }
 
                 Qt.callLater(() => {
@@ -540,8 +579,11 @@ Item {
                 return;
             }
 
-            lastError = clean || `${operation} failed (code ${exitCode})`;
-            ToastService.showError("AdGuard VPN", lastError);
+            lastError = clean || t("toast.operation_failed", "{operation} failed (code {code})", {
+                operation: operation,
+                code: exitCode
+            });
+            ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
             refreshStatus();
         });
     }

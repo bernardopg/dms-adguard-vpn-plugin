@@ -13,6 +13,7 @@ Widget plugin for DankMaterialShell that integrates with `adguardvpn-cli` to mon
   - update channel (`release` / `beta` / `nightly`)
   - DNS upstream
 - Plugin settings for polling cadence and connect defaults
+- Built-in multilingual UI with locale override
 - ANSI-safe parser for CLI output
 
 ## Requirements
@@ -119,6 +120,17 @@ Recommended loop:
 # edit files
 dms ipc plugins reload adguardVPplugin
 ```
+
+## Localization
+
+The plugin UI is translation-ready and currently ships with:
+
+- `en_US` (English)
+- `pt_BR` (Portuguese - Brazil)
+
+To contribute a new language, see:
+
+- [i18n/README.md](./i18n/README.md)
 
 ## Publishing
 
