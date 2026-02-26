@@ -14,6 +14,7 @@ PluginComponent {
 
     property string locationInputText: ""
     property string dnsInputText: ""
+    property bool dnsInputFocused: false
     property bool showLocationInBar: pluginData.showLocationInBar !== undefined ? pluginData.showLocationInBar : true
 
     function t(key, fallback, params) {
@@ -131,10 +132,6 @@ PluginComponent {
         }
     }
 
-    Ref {
-        service: AdGuardVpnService
-    }
-
     Connections {
         target: pluginService
 
@@ -151,7 +148,7 @@ PluginComponent {
         target: AdGuardVpnService
 
         function onDnsUpstreamChanged() {
-            if (!dnsInput.activeFocus) {
+            if (!root.dnsInputFocused) {
                 dnsInputText = AdGuardVpnService.dnsUpstream || "";
             }
         }
@@ -718,6 +715,7 @@ PluginComponent {
                                         selectedTextColor: Theme.onPrimary
                                         selectionColor: Theme.primary
                                         onTextChanged: root.dnsInputText = text
+                                        onActiveFocusChanged: root.dnsInputFocused = activeFocus
 
                                         background: Rectangle {
                                             radius: Theme.cornerRadius

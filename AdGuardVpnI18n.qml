@@ -73,7 +73,7 @@ QtObject {
         languageOverride = stored.toString();
     }
 
-    Connections {
+    property var pluginDataConnection: Connections {
         target: PluginService
         function onPluginDataChanged(changedPluginId) {
             if (changedPluginId === root.pluginId) {
