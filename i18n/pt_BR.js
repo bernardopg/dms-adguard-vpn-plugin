@@ -1,3 +1,4 @@
+// @ts-nocheck
 .pragma library
 
 var translations = ({
@@ -10,6 +11,7 @@ var translations = ({
     "status.no_output": "Sem saída de status",
     "status.connected": "Conectado ({location})",
     "status.disconnected": "Desconectado",
+    "status.locations_parse_failed": "Não foi possível interpretar a lista de localizações da saída do CLI",
 
     "toast.fastest_selected": "Localização mais rápida selecionada",
     "toast.location_empty": "A localização está vazia",
@@ -25,6 +27,14 @@ var translations = ({
     "toast.done": "Concluído",
     "toast.default_location_saved": "Localização padrão salva: {location}",
     "toast.operation_failed": "{operation} falhou (código {code})",
+    "toast.log_opened": "Log do túnel aberto",
+    "toast.log_opening": "Abrindo log do túnel...",
+    "toast.log_missing": "Arquivo de log do túnel não encontrado: {path}",
+    "toast.log_open_unsupported": "Não foi possível abrir automaticamente um terminal/editor. Log: {path}",
+    "toast.log_manual_command": "Execute no terminal: {cmd}",
+    "toast.log_open_failed": "Falha ao abrir o log do túnel",
+    "toast.reconnect_scheduled": "Conexão caiu. Reconectando...",
+    "hint.location_not_found": "Tente atualizar as localizações e usar o código ISO (ex.: BR).",
 
     "bar.cli": "CLI",
     "bar.pending": "...",
@@ -43,6 +53,9 @@ var translations = ({
     "summary.renewal": "Renovação: {date}",
     "summary.mode_protocol_channel": "Modo: {mode}  •  Protocolo: {protocol}  •  Canal: {channel}",
     "summary.cli_last_sync": "CLI: {version}  •  Última sincronização: {time}",
+    "summary.last_command": "Último comando: {command}  •  Saída: {code}  •  Hora: {time}",
+    "summary.last_command_none": "Último comando: nenhum",
+    "summary.last_command_output": "Última saída: {output}",
 
     "section.quick_actions": "Ações Rápidas",
     "section.locations": "Localizações",
@@ -53,14 +66,20 @@ var translations = ({
     "action.fastest": "Mais Rápida",
     "action.refresh": "Atualizar",
     "action.set_default": "Salvar Padrão",
+    "action.open_log": "Abrir Log",
     "action.apply": "Aplicar",
     "action.release": "Release",
     "action.beta": "Beta",
     "action.nightly": "Nightly",
+    "action.favorite": "Favoritar",
+    "action.unfavorite": "Desfavoritar",
 
     "status.running_command": "Executando: {command}",
     "locations.placeholder": "Cidade, país ou código ISO (ex.: Sao Paulo / BR)",
     "locations.top_last_update": "Top {count} localizações • Última atualização: {time}",
+    "locations.search_placeholder": "Filtrar por cidade, país ou ISO",
+    "locations.filtered_count": "Exibindo {shown}/{total} • Última atualização: {time}",
+    "locations.no_matches": "Nenhuma localização corresponde à busca",
 
     "config.mode": "Modo",
     "config.protocol": "Protocolo",
@@ -81,7 +100,7 @@ var translations = ({
     "settings.connect_strategy.location": "Localização Preferida",
     "settings.default_location.label": "Localização Preferida",
     "settings.default_location.description": "Cidade, país ou ISO usado quando a estratégia é Localização Preferida.",
-    "settings.default_location.placeholder": "Sao Paulo, Brazil",
+    "settings.default_location.placeholder": "São Paulo, Brasil",
     "settings.ip_stack.label": "Pilha de IP",
     "settings.ip_stack.description": "Adiciona flags IPv4/IPv6 nas operações de conexão.",
     "settings.ip_stack.auto": "Auto",
@@ -89,6 +108,10 @@ var translations = ({
     "settings.ip_stack.ipv6": "Somente IPv6",
     "settings.auto_refresh_locations.label": "Atualizar Localizações Automaticamente",
     "settings.auto_refresh_locations.description": "Atualiza periodicamente as localizações ranqueadas no popout.",
+    "settings.auto_connect_startup.label": "Conectar Automaticamente ao Iniciar",
+    "settings.auto_connect_startup.description": "Dispara automaticamente a conexão quando o plugin/sessão inicia.",
+    "settings.auto_reconnect_drop.label": "Reconectar Automaticamente em Queda",
+    "settings.auto_reconnect_drop.description": "Reconecta automaticamente quando o túnel cair inesperadamente.",
     "settings.show_text_in_bar.label": "Mostrar Texto na Barra",
     "settings.show_text_in_bar.description": "Mostra texto/status ao lado do ícone na barra horizontal.",
     "settings.language.label": "Idioma",

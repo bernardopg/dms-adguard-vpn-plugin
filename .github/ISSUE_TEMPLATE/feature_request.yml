@@ -1,0 +1,46 @@
+name: Feature request
+description: Sugerir melhoria ou nova funcionalidade para o plugin
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado pela sugestão! Quanto mais contexto, melhor para priorização.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema que você quer resolver
+      description: Qual dor atual existe?
+      placeholder: Ex.: Preciso reconectar automaticamente após queda do túnel.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta de solução
+      description: Como você imagina que deveria funcionar?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: Há workaround atual? Outras ideias?
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridade sugerida
+      options:
+        - P1 (alto)
+        - P2 (médio)
+        - P3 (baixo)
+    validations:
+      required: false

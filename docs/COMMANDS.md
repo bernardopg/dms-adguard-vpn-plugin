@@ -1,48 +1,77 @@
 # Command Map
 
-All commands are executed by `AdGuardVpnService.runCli()` using:
+Complete mapping between Service methods and the CLI commands they invoke.
+
+---
+
+## How Commands Run
 
 ```text
-[adguardBinary, ...args]
+AdGuardVpnService.runCli(args)
+  → buildArgs(baseArgs, includeConnectFlags)
+  → Proc.runCommand([adguardBinary, ...finalArgs])
+  → strip ANSI → parse output → update properties
 ```
 
-Default binary is `adguardvpn-cli`, configurable via settings.
+- **Binary:** `adguardvpn-cli` (default, configurable via `adguardBinary` setting).
+- **`buildArgs()`** appends `-y`, `--no-progress`, and `-4`/`-6` flags when `includeConnectFlags` is true.
+
+---
 
 ## Read Operations
 
-| Service method | CLI command |
-|---|---|
-| `checkCliAvailability()` | `adguardvpn-cli --version` |
-| `refreshStatus()` | `adguardvpn-cli status` |
-| `refreshConfig()` | `adguardvpn-cli config show` |
-| `refreshLicense()` | `adguardvpn-cli license` |
-| `refreshLocations()` | `adguardvpn-cli list-locations <count>` |
+These run on recurring timers and never modify VPN state.
 
-## Write/Action Operations
+| Method | CLI Command | Parser | Timer |
+| --- | --- | --- | --- |
+| `checkCliAvailability()` | `--version` | version string check | startup only |
+| `refreshStatus()` | `status` | `parseStatusOutput()` | `statusTimer` |
+| `refreshConfig()` | `config show` | `parseConfigOutput()` | `metadataTimer` |
+| `refreshLicense()` | `license` | `parseLicenseOutput()` | `metadataTimer` |
+| `refreshLocations()` | `list-locations <count>` | `parseLocationsOutput()` | `locationsTimer` |
 
-| Service method | CLI command |
-|---|---|
-| `connectFastest()` | `adguardvpn-cli connect -f -y --no-progress [-4|-6]` |
-| `connectToLocation(x)` | `adguardvpn-cli connect -l "x" -y --no-progress [-4|-6]` |
-| `disconnect()` | `adguardvpn-cli disconnect` |
-| `setMode(mode)` | `adguardvpn-cli config set-mode <tun|socks>` |
-| `setProtocol(protocol)` | `adguardvpn-cli config set-protocol <auto|http2|quic>` |
-| `setUpdateChannel(channel)` | `adguardvpn-cli config set-update-channel <release|beta|nightly>` |
-| `setDns(dns)` | `adguardvpn-cli config set-dns <upstream>` |
+---
 
-## Parsing Notes
+## Write / Action Operations
 
-- ANSI escape sequences are removed before parsing.
-- `status` parser expects the connected format:
-  - `Connected to <location> in <mode> mode, running on <iface>`
-- `list-locations` parser splits by 2+ spaces to keep city/country names intact.
-- `config show` parser maps `Key: Value` lines into normalized runtime properties.
-- `license` parser extracts account, tier, devices, and renewal date when available.
+These are triggered by user interaction. All timers are **suspended** during execution.
+
+| Method | CLI Command | Notes |
+| --- | --- | --- |
+| `connectFastest()` | `connect -f -y --no-progress [-4\|-6]` | Uses `buildArgs` for flags |
+| `connectToLocation(x)` | `connect -l "x" -y --no-progress [-4\|-6]` | `x` = ISO code or label |
+| `disconnect()` | `disconnect` | Sets `suppressReconnectOnce` |
+| `setMode(mode)` | `config set-mode <tun\|socks>` | — |
+| `setProtocol(proto)` | `config set-protocol <auto\|http2\|quic>` | — |
+| `setUpdateChannel(ch)` | `config set-update-channel <release\|beta\|nightly>` | — |
+| `setDns(dns)` | `config set-dns <upstream>` | — |
+
+---
+
+## Parsing Strategy
+
+All CLI output goes through a pipeline:
+
+1. **ANSI strip** — escape sequences removed before any parsing.
+2. **Format-specific parser** — pure functions in `AdGuardVpnParsers.js`.
+3. **Fallback** — on parse failure, properties receive safe defaults ("Unknown", empty, `false`).
+
+### Parser Highlights
+
+| Parser | Strategy |
+| --- | --- |
+| `parseStatusOutput` | Regex match on connected/disconnected variants, key-value extraction |
+| `parseConfigOutput` | `Key: Value` line mapping with current-config fallback for partial output |
+| `parseLicenseOutput` | Line-by-line field extraction (email, tier, devices, renewal date) |
+| `parseLocationsOutput` | Tries 5 column-splitting strategies in order: multi-space, tab, pipe, CSV, dashed |
+
+---
 
 ## Failure Behavior
 
-- Non-zero exit code:
-  - `lastError` is updated
-  - error toast is emitted
-  - status refresh is attempted for reconciliation
-
+| Scenario | Response |
+| --- | --- |
+| Non-zero exit code | `lastError` updated, error toast emitted, status refresh triggered |
+| Location not found | Contextual hint: *"Try refreshing locations and using the ISO code"* |
+| Unparseable output | Graceful fallback with "Unknown" / "No output" — no crash |
+| CLI unavailable | All actions disabled, warning icon shown in bar |

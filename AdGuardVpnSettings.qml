@@ -32,9 +32,18 @@ PluginSettings {
         label: root.t("settings.language.label", "Language")
         description: root.t("settings.language.description", "UI language for this plugin. Auto follows system locale.")
         options: [
-            { label: root.t("settings.language.auto", "Auto (System)"), value: "auto" },
-            { label: root.t("settings.language.en", "English"), value: "en_US" },
-            { label: root.t("settings.language.pt_BR", "Portuguese (Brazil)"), value: "pt_BR" }
+            {
+                label: root.t("settings.language.auto", "Auto (System)"),
+                value: "auto"
+            },
+            {
+                label: root.t("settings.language.en", "English"),
+                value: "en_US"
+            },
+            {
+                label: root.t("settings.language.pt_BR", "Portuguese (Brazil)"),
+                value: "pt_BR"
+            }
         ]
         defaultValue: "auto"
     }
@@ -74,8 +83,14 @@ PluginSettings {
         label: root.t("settings.connect_strategy.label", "Default Connect Strategy")
         description: root.t("settings.connect_strategy.description", "Behavior used by the main Connect action in the widget.")
         options: [
-            { label: root.t("settings.connect_strategy.fastest", "Fastest"), value: "fastest" },
-            { label: root.t("settings.connect_strategy.location", "Preferred Location"), value: "location" }
+            {
+                label: root.t("settings.connect_strategy.fastest", "Fastest"),
+                value: "fastest"
+            },
+            {
+                label: root.t("settings.connect_strategy.location", "Preferred Location"),
+                value: "location"
+            }
         ]
         defaultValue: "fastest"
     }
@@ -93,9 +108,18 @@ PluginSettings {
         label: root.t("settings.ip_stack.label", "IP Stack")
         description: root.t("settings.ip_stack.description", "Append IPv4/IPv6 flags on connect operations.")
         options: [
-            { label: root.t("settings.ip_stack.auto", "Auto"), value: "auto" },
-            { label: root.t("settings.ip_stack.ipv4", "IPv4 only"), value: "ipv4" },
-            { label: root.t("settings.ip_stack.ipv6", "IPv6 only"), value: "ipv6" }
+            {
+                label: root.t("settings.ip_stack.auto", "Auto"),
+                value: "auto"
+            },
+            {
+                label: root.t("settings.ip_stack.ipv4", "IPv4 only"),
+                value: "ipv4"
+            },
+            {
+                label: root.t("settings.ip_stack.ipv6", "IPv6 only"),
+                value: "ipv6"
+            }
         ]
         defaultValue: "auto"
     }
@@ -105,6 +129,20 @@ PluginSettings {
         label: root.t("settings.auto_refresh_locations.label", "Auto Refresh Locations")
         description: root.t("settings.auto_refresh_locations.description", "Periodically update ranked server locations in the popout.")
         defaultValue: true
+    }
+
+    ToggleSetting {
+        settingKey: "autoConnectOnStartup"
+        label: root.t("settings.auto_connect_startup.label", "Auto Connect on Startup")
+        description: root.t("settings.auto_connect_startup.description", "Automatically trigger Connect when the plugin/session starts.")
+        defaultValue: false
+    }
+
+    ToggleSetting {
+        settingKey: "autoReconnectOnDrop"
+        label: root.t("settings.auto_reconnect_drop.label", "Auto Reconnect on Drop")
+        description: root.t("settings.auto_reconnect_drop.description", "Automatically reconnect when the tunnel drops unexpectedly.")
+        defaultValue: false
     }
 
     ToggleSetting {

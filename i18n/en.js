@@ -1,3 +1,4 @@
+// @ts-nocheck
 .pragma library
 
 var translations = ({
@@ -10,6 +11,7 @@ var translations = ({
     "status.no_output": "No status output",
     "status.connected": "Connected ({location})",
     "status.disconnected": "Disconnected",
+    "status.locations_parse_failed": "Could not parse locations list from CLI output",
 
     "toast.fastest_selected": "Fastest location selected",
     "toast.location_empty": "Location is empty",
@@ -25,6 +27,14 @@ var translations = ({
     "toast.done": "Done",
     "toast.default_location_saved": "Default location saved: {location}",
     "toast.operation_failed": "{operation} failed (code {code})",
+    "toast.log_opened": "Tunnel log opened",
+    "toast.log_opening": "Opening tunnel log...",
+    "toast.log_missing": "Tunnel log file not found: {path}",
+    "toast.log_open_unsupported": "Could not open a terminal/editor automatically. Log: {path}",
+    "toast.log_manual_command": "Run in terminal: {cmd}",
+    "toast.log_open_failed": "Failed to open tunnel log",
+    "toast.reconnect_scheduled": "Connection dropped. Reconnecting...",
+    "hint.location_not_found": "Try refreshing locations and using the ISO code (e.g., BR).",
 
     "bar.cli": "CLI",
     "bar.pending": "...",
@@ -43,6 +53,9 @@ var translations = ({
     "summary.renewal": "Renewal: {date}",
     "summary.mode_protocol_channel": "Mode: {mode}  •  Protocol: {protocol}  •  Channel: {channel}",
     "summary.cli_last_sync": "CLI: {version}  •  Last sync: {time}",
+    "summary.last_command": "Last command: {command}  •  Exit: {code}  •  Time: {time}",
+    "summary.last_command_none": "Last command: none",
+    "summary.last_command_output": "Last output: {output}",
 
     "section.quick_actions": "Quick Actions",
     "section.locations": "Locations",
@@ -53,14 +66,20 @@ var translations = ({
     "action.fastest": "Fastest",
     "action.refresh": "Refresh",
     "action.set_default": "Set Default",
+    "action.open_log": "Open Log",
     "action.apply": "Apply",
     "action.release": "Release",
     "action.beta": "Beta",
     "action.nightly": "Nightly",
+    "action.favorite": "Favorite",
+    "action.unfavorite": "Unfavorite",
 
     "status.running_command": "Running: {command}",
     "locations.placeholder": "City, country, or ISO code (e.g. Sao Paulo / BR)",
     "locations.top_last_update": "Top {count} locations • Last update: {time}",
+    "locations.search_placeholder": "Filter by city, country, or ISO",
+    "locations.filtered_count": "Showing {shown}/{total} • Last update: {time}",
+    "locations.no_matches": "No locations match this search",
 
     "config.mode": "Mode",
     "config.protocol": "Protocol",
@@ -89,6 +108,10 @@ var translations = ({
     "settings.ip_stack.ipv6": "IPv6 only",
     "settings.auto_refresh_locations.label": "Auto Refresh Locations",
     "settings.auto_refresh_locations.description": "Periodically update ranked server locations in the popout.",
+    "settings.auto_connect_startup.label": "Auto Connect on Startup",
+    "settings.auto_connect_startup.description": "Automatically trigger Connect when the plugin/session starts.",
+    "settings.auto_reconnect_drop.label": "Auto Reconnect on Drop",
+    "settings.auto_reconnect_drop.description": "Automatically reconnect when the tunnel drops unexpectedly.",
     "settings.show_text_in_bar.label": "Show Text in Bar",
     "settings.show_text_in_bar.description": "Show connection text/location next to the icon in the horizontal bar.",
     "settings.language.label": "Language",

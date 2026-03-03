@@ -2,3 +2,7 @@
 *.swo
 *.tmp
 .DS_Store
+
+.claude/
+.vscode/
+.qmlls.ini

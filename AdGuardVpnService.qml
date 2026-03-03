@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import qs.Common
 import qs.Services
+import "./AdGuardVpnParsers.js" as AdGuardVpnParsers
 
 Item {
     id: root
@@ -17,7 +18,10 @@ Item {
             connectStrategy: "fastest",
             defaultLocation: "",
             ipStack: "auto",
-            autoRefreshLocations: true
+            autoRefreshLocations: true,
+            autoConnectOnStartup: false,
+            autoReconnectOnDrop: false,
+            favoriteLocationIsos: []
         })
 
     property string adguardBinary: defaults.adguardBinary
@@ -27,6 +31,11 @@ Item {
     property string defaultLocation: defaults.defaultLocation
     property string ipStack: defaults.ipStack
     property bool autoRefreshLocations: defaults.autoRefreshLocations
+    property bool autoConnectOnStartup: defaults.autoConnectOnStartup
+    property bool autoReconnectOnDrop: defaults.autoReconnectOnDrop
+    property var favoriteLocationIsos: defaults.favoriteLocationIsos
+    property bool startupAutoConnectAttempted: false
+    property bool suppressReconnectOnce: false
 
     property bool cliAvailable: false
     property string cliVersion: ""
@@ -53,12 +62,22 @@ Item {
     property int socksPort: 1080
     property string routingMode: ""
     property bool changeSystemDns: false
+    readonly property string tunnelLogPath: "$HOME/.local/share/adguardvpn-cli/tunnel.log"
 
     property var locations: []
     property string lastError: ""
     property string lastStatusRaw: ""
     property string lastConfigRaw: ""
     property string lastLicenseRaw: ""
+    property string lastCommandText: ""
+    property int lastCommandExitCode: -1
+    property string lastCommandOutput: ""
+    property double lastCommandAtMs: 0
+    property var pollingSnapshot: ({
+            status: false,
+            metadata: false,
+            locations: false
+        })
 
     property double lastRefreshMs: 0
     property double lastLocationsRefreshMs: 0
@@ -97,35 +116,28 @@ Item {
     }
 
     function stripAnsi(text) {
-        return (text || "")
-            .replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "")
-            .replace(/\x1b[@-_]/g, "");
+        return (text || "").replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "").replace(/\x1b[@-_]/g, "");
     }
 
     function cleanOutput(text) {
         return stripAnsi(text || "").replace(/\r/g, "").trim();
     }
 
-    function normalizeProtocol(value) {
-        const text = (value || "").toString().toLowerCase();
-        if (text.indexOf("http2") >= 0) {
-            return "http2";
-        }
-        if (text.indexOf("quic") >= 0) {
-            return "quic";
-        }
-        return "auto";
-    }
+    function normalizeFavoriteLocationIsos(value) {
+        const list = [];
+        const seen = ({});
+        const source = Array.isArray(value) ? value : [];
 
-    function normalizeChannel(value) {
-        const text = (value || "").toString().toLowerCase();
-        if (text.indexOf("beta") >= 0) {
-            return "beta";
+        for (let i = 0; i < source.length; i++) {
+            const iso = (source[i] || "").toString().trim().toUpperCase();
+            if (!/^[A-Z]{2}$/.test(iso) || seen[iso]) {
+                continue;
+            }
+            seen[iso] = true;
+            list.push(iso);
         }
-        if (text.indexOf("nightly") >= 0) {
-            return "nightly";
-        }
-        return "release";
+
+        return list;
     }
 
     function loadSettings() {
@@ -141,6 +153,9 @@ Item {
         defaultLocation = (load("defaultLocation", defaults.defaultLocation) || "").toString().trim();
         ipStack = normalizedChoice(load("ipStack", defaults.ipStack), defaults.ipStack, ["auto", "ipv4", "ipv6"]);
         autoRefreshLocations = asBool(load("autoRefreshLocations", defaults.autoRefreshLocations), defaults.autoRefreshLocations);
+        autoConnectOnStartup = asBool(load("autoConnectOnStartup", defaults.autoConnectOnStartup), defaults.autoConnectOnStartup);
+        autoReconnectOnDrop = asBool(load("autoReconnectOnDrop", defaults.autoReconnectOnDrop), defaults.autoReconnectOnDrop);
+        favoriteLocationIsos = normalizeFavoriteLocationIsos(load("favoriteLocationIsos", defaults.favoriteLocationIsos));
 
         restartTimers();
         checkCliAvailability();
@@ -148,6 +163,32 @@ Item {
 
     function saveSetting(key, value) {
         PluginService.savePluginData(pluginId, key, value);
+    }
+
+    function isFavoriteLocation(iso) {
+        const normalizedIso = (iso || "").toString().trim().toUpperCase();
+        if (!/^[A-Z]{2}$/.test(normalizedIso)) {
+            return false;
+        }
+        return favoriteLocationIsos.indexOf(normalizedIso) >= 0;
+    }
+
+    function toggleFavoriteLocation(iso) {
+        const normalizedIso = (iso || "").toString().trim().toUpperCase();
+        if (!/^[A-Z]{2}$/.test(normalizedIso)) {
+            return;
+        }
+
+        const next = favoriteLocationIsos.slice();
+        const index = next.indexOf(normalizedIso);
+        if (index >= 0) {
+            next.splice(index, 1);
+        } else {
+            next.push(normalizedIso);
+        }
+
+        favoriteLocationIsos = normalizeFavoriteLocationIsos(next);
+        saveSetting("favoriteLocationIsos", favoriteLocationIsos);
     }
 
     function restartTimers() {
@@ -194,10 +235,12 @@ Item {
 
             lastError = "";
             refreshAll(true);
+            maybeAutoConnectOnStartup();
         });
     }
 
     function parseStatus(stdout, exitCode) {
+        const wasConnected = isConnected;
         const clean = cleanOutput(stdout);
         lastStatusRaw = clean;
         lastRefreshMs = Date.now();
@@ -209,51 +252,56 @@ Item {
             connectedMode = "";
             tunnelInterface = "";
             lastError = statusSummary;
+            maybeScheduleReconnect(wasConnected, isConnected);
             return;
         }
 
         cliAvailable = true;
         lastError = "";
 
-        const lines = clean.split("\n").map(line => line.trim()).filter(Boolean);
-        if (!lines.length) {
+        const parsed = AdGuardVpnParsers.parseStatusOutput(clean);
+        if (parsed.empty) {
             isConnected = false;
             statusSummary = t("status.no_output", "No status output");
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
+            maybeScheduleReconnect(wasConnected, isConnected);
             return;
         }
 
-        const firstLine = lines[0];
-
-        const connectedMatch = firstLine.match(/^Connected to\s+(.+?)\s+in\s+([^\s]+)\s+mode,\s+running on\s+([^\s]+)$/i);
-        if (connectedMatch) {
-            isConnected = true;
-            connectedLocation = connectedMatch[1].trim();
-            connectedMode = connectedMatch[2].toUpperCase();
-            tunnelInterface = connectedMatch[3].trim();
-            statusSummary = t("status.connected", "Connected ({location})", { location: connectedLocation });
-            return;
-        }
-
-        if (/not\s+connected|disconnected|not\s+running|stopped/i.test(firstLine)) {
+        if (parsed.disconnected) {
             isConnected = false;
             statusSummary = t("status.disconnected", "Disconnected");
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
+            maybeScheduleReconnect(wasConnected, isConnected);
             return;
         }
 
-        isConnected = /connected/i.test(firstLine) && !/not\s+connected/i.test(firstLine);
-        statusSummary = firstLine;
+        if (parsed.connected) {
+            isConnected = true;
+            connectedLocation = parsed.connectedLocation || "";
+            connectedMode = parsed.connectedMode || "";
+            tunnelInterface = parsed.tunnelInterface || "";
+            statusSummary = t("status.connected", "Connected ({location})", {
+                location: connectedLocation
+            });
+            maybeScheduleReconnect(wasConnected, isConnected);
+            return;
+        }
+
+        isConnected = !!parsed.isConnected;
+        statusSummary = parsed.firstLine || t("status.unknown", "Unknown");
 
         if (!isConnected) {
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
         }
+
+        maybeScheduleReconnect(wasConnected, isConnected);
     }
 
     function parseLicense(stdout, exitCode) {
@@ -264,38 +312,11 @@ Item {
             return;
         }
 
-        const lines = clean.split("\n").map(line => line.trim()).filter(Boolean);
-
-        accountEmail = "";
-        accountTier = "";
-        maxDevices = 0;
-        subscriptionRenewDate = "";
-
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            let match = line.match(/^Logged in as\s+(.+)$/i);
-            if (match) {
-                accountEmail = match[1].trim();
-                continue;
-            }
-
-            match = line.match(/^You are using the\s+(.+?)\s+version$/i);
-            if (match) {
-                accountTier = match[1].trim();
-                continue;
-            }
-
-            match = line.match(/^Up to\s+(\d+)\s+devices/i);
-            if (match) {
-                maxDevices = parseInt(match[1], 10);
-                continue;
-            }
-
-            match = line.match(/^Your subscription will be renewed on\s+([0-9]{4}-[0-9]{2}-[0-9]{2})$/i);
-            if (match) {
-                subscriptionRenewDate = match[1];
-            }
-        }
+        const parsed = AdGuardVpnParsers.parseLicenseOutput(clean);
+        accountEmail = parsed.accountEmail;
+        accountTier = parsed.accountTier;
+        maxDevices = parsed.maxDevices;
+        subscriptionRenewDate = parsed.subscriptionRenewDate;
     }
 
     function parseConfig(stdout, exitCode) {
@@ -306,34 +327,34 @@ Item {
             return;
         }
 
-        const lines = clean.split("\n");
-        const values = ({});
+        const parsed = AdGuardVpnParsers.parseConfigOutput(clean, {
+            currentMode: currentMode,
+            currentProtocol: currentProtocol,
+            currentProtocolRaw: currentProtocolRaw,
+            currentUpdateChannel: currentUpdateChannel,
+            dnsUpstream: dnsUpstream,
+            socksHost: socksHost,
+            socksPort: socksPort,
+            routingMode: routingMode
+        });
 
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line || /^Current configuration/i.test(line)) {
-                continue;
-            }
+        currentMode = parsed.currentMode;
+        currentProtocolRaw = parsed.currentProtocolRaw;
+        currentProtocol = parsed.currentProtocol;
+        currentUpdateChannel = parsed.currentUpdateChannel;
+        dnsUpstream = parsed.dnsUpstream;
+        socksHost = parsed.socksHost;
+        socksPort = parsed.socksPort;
+        routingMode = parsed.routingMode;
+        changeSystemDns = parsed.changeSystemDns;
+    }
 
-            const separatorIndex = line.indexOf(":");
-            if (separatorIndex < 0) {
-                continue;
-            }
-
-            const key = line.slice(0, separatorIndex).trim().toLowerCase();
-            const value = line.slice(separatorIndex + 1).trim();
-            values[key] = value;
+    function buildLocationHelpHint(messageText) {
+        const text = (messageText || "").toString();
+        if (/no location with the specified city name, country name, or iso code/i.test(text) || /location not found/i.test(text)) {
+            return t("hint.location_not_found", "Try refreshing locations and using the ISO code (e.g., BR).", {});
         }
-
-        currentMode = (values["mode"] || currentMode || "").toString().toUpperCase();
-        currentProtocolRaw = values["protocol"] || currentProtocolRaw;
-        currentProtocol = normalizeProtocol(values["protocol"] || currentProtocol);
-        currentUpdateChannel = normalizeChannel(values["update channel"] || currentUpdateChannel);
-        dnsUpstream = values["dns upstream"] || dnsUpstream;
-        socksHost = values["socks host"] || socksHost;
-        socksPort = asInt(values["socks port"], socksPort || 1080, 1, 65535);
-        routingMode = (values["tunnel routing mode"] || routingMode || "").toString().toLowerCase();
-        changeSystemDns = /on|enabled|true/i.test(values["change system dns"] || "");
+        return "";
     }
 
     function parseLocations(stdout, exitCode) {
@@ -346,40 +367,13 @@ Item {
             return;
         }
 
-        const parsed = [];
-        const lines = clean.split("\n");
+        const parsed = AdGuardVpnParsers.parseLocationsOutput(clean);
 
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].replace(/\s+$/, "");
-            if (!line || /^ISO\s+/i.test(line) || /^You can connect/i.test(line)) {
-                continue;
-            }
-
-            const columns = line.split(/\s{2,}/).map(chunk => chunk.trim()).filter(Boolean);
-            if (columns.length < 3) {
-                continue;
-            }
-
-            const iso = columns[0];
-            if (!/^[A-Z]{2}$/.test(iso)) {
-                continue;
-            }
-
-            const country = columns[1];
-            const city = columns[2];
-            const pingRaw = columns.length > 3 ? columns[3] : "";
-            const pingValue = /^\d+$/.test(pingRaw) ? parseInt(pingRaw, 10) : -1;
-
-            parsed.push({
-                iso: iso,
-                country: country,
-                city: city,
-                ping: pingValue,
-                label: `${city}, ${country} (${iso})`
-            });
+        if (parsed.parseFailed) {
+            lastError = t("status.locations_parse_failed", "Could not parse locations list from CLI output");
         }
 
-        locations = parsed;
+        locations = parsed.locations;
         lastLocationsRefreshMs = Date.now();
     }
 
@@ -437,6 +431,55 @@ Item {
         }
     }
 
+    function buildArgs(baseArgs, includeConnectFlags) {
+        const args = (baseArgs || []).slice();
+        if (includeConnectFlags) {
+            args.push("-y");
+            args.push("--no-progress");
+
+            if (ipStack === "ipv4") {
+                args.push("-4");
+            } else if (ipStack === "ipv6") {
+                args.push("-6");
+            }
+        }
+        return args;
+    }
+
+    function suspendPolling() {
+        pollingSnapshot = ({
+                status: statusTimer.running,
+                metadata: metadataTimer.running,
+                locations: locationsTimer.running
+            });
+
+        statusTimer.stop();
+        metadataTimer.stop();
+        locationsTimer.stop();
+    }
+
+    function resumePolling() {
+        if (pollingSnapshot.status) {
+            statusTimer.start();
+        }
+        if (pollingSnapshot.metadata) {
+            metadataTimer.start();
+        }
+        if (pollingSnapshot.locations && autoRefreshLocations) {
+            locationsTimer.start();
+        }
+    }
+
+    function recordLastCommand(args, exitCode, cleanOutputText) {
+        const fullCommand = [adguardBinary].concat(args || []);
+        const lines = (cleanOutputText || "").split("\n").map(line => line.trim()).filter(Boolean);
+
+        lastCommandText = fullCommand.join(" ");
+        lastCommandExitCode = exitCode;
+        lastCommandOutput = lines.length ? lines[0] : "";
+        lastCommandAtMs = Date.now();
+    }
+
     function connectWithStrategy() {
         if (connectStrategy === "location" && defaultLocation) {
             connectToLocation(defaultLocation);
@@ -445,51 +488,85 @@ Item {
         connectFastest();
     }
 
-    function connectFastest() {
-        const args = ["connect", "-f", "-y", "--no-progress"];
-        if (ipStack === "ipv4") {
-            args.push("-4");
-        } else if (ipStack === "ipv6") {
-            args.push("-6");
+    function maybeAutoConnectOnStartup() {
+        if (startupAutoConnectAttempted || !autoConnectOnStartup || !cliAvailable || commandRunning || isConnected) {
+            return;
         }
 
-        runAction(
-            "connectFastest",
-            args,
-            t("app.title", "AdGuard VPN"),
-            t("toast.fastest_selected", "Fastest location selected")
-        );
+        startupAutoConnectAttempted = true;
+        connectWithStrategy();
+    }
+
+    function maybeScheduleReconnect(wasConnected, nowConnected) {
+        if (nowConnected) {
+            reconnectTimer.stop();
+            suppressReconnectOnce = false;
+            return;
+        }
+
+        if (suppressReconnectOnce) {
+            suppressReconnectOnce = false;
+            return;
+        }
+
+        if (!autoReconnectOnDrop || !wasConnected || !cliAvailable || commandRunning || reconnectTimer.running) {
+            return;
+        }
+
+        ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.reconnect_scheduled", "Connection dropped. Reconnecting..."));
+        reconnectTimer.start();
+    }
+
+    function connectFastest() {
+        const args = buildArgs(["connect", "-f"], true);
+
+        runAction("connectFastest", args, t("app.title", "AdGuard VPN"), t("toast.fastest_selected", "Fastest location selected"));
+    }
+
+    function resolveLocationTarget(locationText) {
+        const rawTarget = (locationText || "").toString().trim();
+        if (!rawTarget) {
+            return "";
+        }
+
+        const normalizedInput = rawTarget.toLowerCase();
+        for (let i = 0; i < locations.length; i++) {
+            const locationItem = locations[i];
+            const iso = (locationItem.iso || "").toString().trim();
+            const country = (locationItem.country || "").toString().trim();
+            const city = (locationItem.city || "").toString().trim();
+
+            const candidates = [iso, city, country, `${city}, ${country}`, `${country}, ${city}`].filter(Boolean);
+
+            for (let c = 0; c < candidates.length; c++) {
+                if (candidates[c].toLowerCase() === normalizedInput) {
+                    return iso || rawTarget;
+                }
+            }
+        }
+
+        return rawTarget;
     }
 
     function connectToLocation(locationText) {
-        const target = (locationText || "").toString().trim();
-        if (!target) {
+        const rawTarget = (locationText || "").toString().trim();
+        if (!rawTarget) {
             ToastService.showError(t("app.title", "AdGuard VPN"), t("toast.location_empty", "Location is empty"));
             return;
         }
 
-        const args = ["connect", "-l", target, "-y", "--no-progress"];
-        if (ipStack === "ipv4") {
-            args.push("-4");
-        } else if (ipStack === "ipv6") {
-            args.push("-6");
-        }
+        const target = resolveLocationTarget(rawTarget);
 
-        runAction(
-            "connectLocation",
-            args,
-            t("app.title", "AdGuard VPN"),
-            t("toast.connecting_to", "Connecting to {location}", { location: target })
-        );
+        const args = buildArgs(["connect", "-l", target], true);
+
+        runAction("connectLocation", args, t("app.title", "AdGuard VPN"), t("toast.connecting_to", "Connecting to {location}", {
+            location: rawTarget
+        }));
     }
 
     function disconnect() {
-        runAction(
-            "disconnect",
-            ["disconnect"],
-            t("app.title", "AdGuard VPN"),
-            t("toast.disconnect_requested", "Disconnect requested")
-        );
+        suppressReconnectOnce = true;
+        runAction("disconnect", ["disconnect"], t("app.title", "AdGuard VPN"), t("toast.disconnect_requested", "Disconnect requested"));
     }
 
     function toggleConnection() {
@@ -502,32 +579,23 @@ Item {
 
     function setMode(mode) {
         const normalized = normalizedChoice(mode, "tun", ["tun", "socks"]);
-        runAction(
-            "setMode",
-            ["config", "set-mode", normalized],
-            t("app.title", "AdGuard VPN"),
-            t("toast.mode_set", "Mode set to {mode}", { mode: normalized.toUpperCase() })
-        );
+        runAction("setMode", ["config", "set-mode", normalized], t("app.title", "AdGuard VPN"), t("toast.mode_set", "Mode set to {mode}", {
+            mode: normalized.toUpperCase()
+        }));
     }
 
     function setProtocol(protocol) {
         const normalized = normalizedChoice(protocol, "auto", ["auto", "http2", "quic"]);
-        runAction(
-            "setProtocol",
-            ["config", "set-protocol", normalized],
-            t("app.title", "AdGuard VPN"),
-            t("toast.protocol_set", "Protocol set to {protocol}", { protocol: normalized })
-        );
+        runAction("setProtocol", ["config", "set-protocol", normalized], t("app.title", "AdGuard VPN"), t("toast.protocol_set", "Protocol set to {protocol}", {
+            protocol: normalized
+        }));
     }
 
     function setUpdateChannel(channel) {
         const normalized = normalizedChoice(channel, "release", ["release", "beta", "nightly"]);
-        runAction(
-            "setUpdateChannel",
-            ["config", "set-update-channel", normalized],
-            t("app.title", "AdGuard VPN"),
-            t("toast.channel_set", "Channel set to {channel}", { channel: normalized })
-        );
+        runAction("setUpdateChannel", ["config", "set-update-channel", normalized], t("app.title", "AdGuard VPN"), t("toast.channel_set", "Channel set to {channel}", {
+            channel: normalized
+        }));
     }
 
     function setDns(upstream) {
@@ -537,12 +605,136 @@ Item {
             return;
         }
 
-        runAction(
-            "setDns",
-            ["config", "set-dns", normalized],
-            t("app.title", "AdGuard VPN"),
-            t("toast.dns_set", "DNS set to {dns}", { dns: normalized })
-        );
+        runAction("setDns", ["config", "set-dns", normalized], t("app.title", "AdGuard VPN"), t("toast.dns_set", "DNS set to {dns}", {
+            dns: normalized
+        }));
+    }
+
+    function openTunnelLog() {
+        const openScript = `
+            resolve_home() {
+                if [ -n "$HOME" ]; then
+                    printf '%s' "$HOME"
+                    return
+                fi
+                getent passwd "$(id -u)" | cut -d: -f6
+            }
+
+            HOME_DIR="$(resolve_home)"
+            TARGET=""
+
+            for candidate in \
+                "${tunnelLogPath}" \
+                "$HOME_DIR/.local/share/adguardvpn-cli/tunnel.log" \
+                "$HOME_DIR/.local/state/adguardvpn-cli/tunnel.log" \
+                "$HOME_DIR/.cache/adguardvpn-cli/tunnel.log" \
+                "$HOME_DIR/.cache/adguardvpn/tunnel.log"; do
+                expanded="$candidate"
+                case "$expanded" in
+                    '$HOME'/*)
+                        expanded="$HOME_DIR/\${expanded#'$HOME'/}"
+                        ;;
+                esac
+                if [ -f "$expanded" ]; then
+                    TARGET="$expanded"
+                    break
+                fi
+            done
+
+            [ -z "$TARGET" ] && exit 44
+
+            LOG_CMD='printf "AdGuard VPN log: %s\\nCtrl+C para sair.\\n\\n" "$1"; tail -n 200 -f "$1"'
+
+            if command -v kitty >/dev/null 2>&1; then
+                if [ -n "$KITTY_LISTEN_ON" ]; then
+                    kitty @ launch --type=window --title "AdGuard VPN Log" sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                fi
+                kitty --title "AdGuard VPN Log" sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                printf 'DBG:kitty_failed rc=%s display=%s wayland=%s listen=%s\\n' "$?" "\${DISPLAY:-}" "\${WAYLAND_DISPLAY:-}" "\${KITTY_LISTEN_ON:-}"
+            fi
+
+            if command -v x-terminal-emulator >/dev/null 2>&1; then
+                x-terminal-emulator -e sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v gnome-terminal >/dev/null 2>&1; then
+                gnome-terminal -- sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v konsole >/dev/null 2>&1; then
+                konsole -e sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v alacritty >/dev/null 2>&1; then
+                alacritty -e sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v wezterm >/dev/null 2>&1; then
+                wezterm start -- sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v xfce4-terminal >/dev/null 2>&1; then
+                xfce4-terminal --hold -e "sh -lc '$LOG_CMD' sh '$TARGET'" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v mate-terminal >/dev/null 2>&1; then
+                mate-terminal -- sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v lxterminal >/dev/null 2>&1; then
+                lxterminal -e "sh -lc '$LOG_CMD' sh '$TARGET'" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v terminator >/dev/null 2>&1; then
+                terminator -x sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v xdg-open >/dev/null 2>&1; then
+                xdg-open "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v gio >/dev/null 2>&1; then
+                gio open "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            if command -v code >/dev/null 2>&1; then
+                code -r "$TARGET" >/dev/null 2>&1 && exit 0
+            fi
+
+            printf '%s\n%s\n%s' "$TARGET" "tail -n 200 -f '$TARGET'" "DBG:display=\${DISPLAY:-} wayland=\${WAYLAND_DISPLAY:-} xdg=\${XDG_SESSION_TYPE:-}"
+
+            exit 45
+        `;
+
+        Proc.runCommand(`${pluginId}.openTunnelLog.${Date.now()}`, ["sh", "-lc", openScript], (stdout, exitCode) => {
+            if (exitCode === 0) {
+                ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.log_opened", "Tunnel log opened"));
+                return;
+            }
+
+            const missingLog = exitCode === 44;
+            const openUnsupported = exitCode === 45;
+            const outputLines = (cleanOutput(stdout) || "").split("\n").map(line => line.trim()).filter(Boolean);
+            const resolvedPath = outputLines.length > 0 ? outputLines[0] : tunnelLogPath;
+            const manualCommand = outputLines.length > 1 ? outputLines[1] : `tail -n 200 -f '${resolvedPath}'`;
+            const debugLine = outputLines.length > 2 ? outputLines[2] : "";
+            lastError = missingLog ? t("toast.log_missing", "Tunnel log file not found: {path}", {
+                path: tunnelLogPath
+            }) : (openUnsupported ? t("toast.log_open_unsupported", "Could not open a terminal/editor automatically. Log: {path}", {
+                path: resolvedPath
+            }) : t("toast.log_open_failed", "Failed to open tunnel log"));
+
+            if (debugLine) {
+                lastError = `${lastError}\n${debugLine}`;
+            }
+
+            ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
+            if (openUnsupported) {
+                ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.log_manual_command", "Run in terminal: {cmd}", {
+                    cmd: manualCommand
+                }));
+            }
+        }, 100);
     }
 
     function runAction(operation, args, toastTitle, toastMessage) {
@@ -559,12 +751,15 @@ Item {
         commandRunning = true;
         runningCommand = operation;
         lastError = "";
+        suspendPolling();
 
         runCli(operation, args, (stdout, exitCode) => {
             commandRunning = false;
             runningCommand = "";
+            resumePolling();
 
             const clean = cleanOutput(stdout);
+            recordLastCommand(args, exitCode, clean);
             if (exitCode === 0) {
                 if (toastTitle) {
                     const firstLine = clean.split("\n").map(line => line.trim()).filter(Boolean)[0];
@@ -583,6 +778,10 @@ Item {
                 operation: operation,
                 code: exitCode
             });
+            const hint = buildLocationHelpHint(lastError);
+            if (hint) {
+                lastError = `${lastError}\n${hint}`;
+            }
             ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
             refreshStatus();
         });
@@ -615,6 +814,18 @@ Item {
         onTriggered: root.refreshLocations()
     }
 
+    Timer {
+        id: reconnectTimer
+        interval: 5000
+        running: false
+        repeat: false
+        onTriggered: {
+            if (!root.isConnected && root.autoReconnectOnDrop && root.cliAvailable && !root.commandRunning) {
+                root.connectWithStrategy();
+            }
+        }
+    }
+
     Connections {
         target: PluginService
         function onPluginDataChanged(changedPluginId) {
@@ -626,6 +837,5 @@ Item {
 
     Component.onCompleted: {
         loadSettings();
-        checkCliAvailability();
     }
 }

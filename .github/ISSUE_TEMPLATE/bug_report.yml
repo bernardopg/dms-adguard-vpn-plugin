@@ -1,0 +1,70 @@
+name: Bug report
+description: Reportar erro de funcionamento no plugin AdGuard VPN
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar! Preencha os campos abaixo para facilitar a reprodução.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Resumo
+      description: O que está quebrado?
+      placeholder: Ex.: Conectar por localização retorna erro mesmo com ISO válido.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      description: Liste passos claros e objetivos.
+      placeholder: |
+        1. Abrir popout do widget
+        2. Clicar em uma localização
+        3. Observar erro no toast
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportamento esperado
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamento atual
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Versão do plugin
+      placeholder: ex.: 1.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: dms-version
+    attributes:
+      label: Versão do DankMaterialShell
+      placeholder: ex.: 1.4.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs/saída relevante
+      description: Cole trechos de log/erro (sem segredos).
+      render: shell
+    validations:
+      required: false
