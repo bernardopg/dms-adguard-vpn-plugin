@@ -14,9 +14,10 @@ for candidate in qmlformat qml6format qmlformat6; do
 done
 
 if [[ -z "$QML_FMT" ]]; then
-  echo "Error: no QML formatter found (tried: qmlformat, qml6format, qmlformat6)." >&2
-  echo "Install qt6-declarative-dev-tools (Ubuntu 22.04) or qml6format (Ubuntu 24.04+)." >&2
-  exit 1
+  echo "WARNING: no QML formatter found (tried: qmlformat, qml6format, qmlformat6)." >&2
+  echo "         Install qt6-declarative-dev-tools or qml6-tools to enable QML syntax checks." >&2
+  echo "         Skipping QML validation."
+  exit 0
 fi
 
 mapfile -t qml_files < <(find . -type f -name "*.qml" | sort)
