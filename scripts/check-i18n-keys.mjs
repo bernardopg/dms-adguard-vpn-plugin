@@ -1,9 +1,10 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = resolve(process.cwd());
-const enPath = resolve(root, "i18n/en.js");
-const ptPath = resolve(root, "i18n/pt_BR.js");
+const i18nDir = resolve(root, "i18n");
+const baseLocaleFile = "en.js";
+const fullParityLocales = new Set(["pt_BR.js"]);
 
 function extractKeys(fileContent) {
   const keyRegex = /^\s*"([^"]+)"\s*:/gm;
@@ -19,32 +20,64 @@ function diff(sourceSet, targetSet) {
   return [...sourceSet].filter((key) => !targetSet.has(key)).sort();
 }
 
-const enContent = readFileSync(enPath, "utf8");
-const ptContent = readFileSync(ptPath, "utf8");
+const allLocaleFiles = readdirSync(i18nDir)
+  .filter((name) => name.endsWith(".js"))
+  .sort();
 
-const enKeys = extractKeys(enContent);
-const ptKeys = extractKeys(ptContent);
-
-const missingInPt = diff(enKeys, ptKeys);
-const missingInEn = diff(ptKeys, enKeys);
-
-if (missingInPt.length === 0 && missingInEn.length === 0) {
-  console.log("✅ i18n key parity OK (en.js ↔ pt_BR.js)");
-  process.exit(0);
+if (!allLocaleFiles.includes(baseLocaleFile)) {
+  console.error(`❌ Missing base locale: ${baseLocaleFile}`);
+  process.exit(1);
 }
 
-console.error("❌ i18n key parity failed");
-if (missingInPt.length > 0) {
-  console.error("- Missing in pt_BR.js:");
-  for (const key of missingInPt) {
-    console.error(`  - ${key}`);
+const baseContent = readFileSync(resolve(i18nDir, baseLocaleFile), "utf8");
+const baseKeys = extractKeys(baseContent);
+
+const optionalLocaleWarnings = [];
+let hasErrors = false;
+
+for (const localeFile of allLocaleFiles) {
+  if (localeFile === baseLocaleFile) {
+    continue;
+  }
+
+  const localeContent = readFileSync(resolve(i18nDir, localeFile), "utf8");
+  const localeKeys = extractKeys(localeContent);
+
+  const missingInLocale = diff(baseKeys, localeKeys);
+  const extraInLocale = diff(localeKeys, baseKeys);
+
+  if (extraInLocale.length > 0) {
+    hasErrors = true;
+    console.error(`- Unknown keys in ${localeFile}:`);
+    for (const key of extraInLocale) {
+      console.error(`  - ${key}`);
+    }
+  }
+
+  if (fullParityLocales.has(localeFile) && missingInLocale.length > 0) {
+    hasErrors = true;
+    console.error(`- Missing keys in ${localeFile}:`);
+    for (const key of missingInLocale) {
+      console.error(`  - ${key}`);
+    }
+  } else if (missingInLocale.length > 0) {
+    optionalLocaleWarnings.push(
+      `${localeFile}: ${missingInLocale.length} key(s) missing (fallback to en.js)`,
+    );
   }
 }
-if (missingInEn.length > 0) {
-  console.error("- Missing in en.js:");
-  for (const key of missingInEn) {
-    console.error(`  - ${key}`);
-  }
+
+if (hasErrors) {
+  console.error("❌ i18n key parity failed");
+  process.exit(1);
 }
 
-process.exit(1);
+console.log(
+  `✅ i18n checks OK (base: ${baseLocaleFile}, locales: ${allLocaleFiles.length})`,
+);
+if (optionalLocaleWarnings.length > 0) {
+  console.log("ℹ️ Optional locale fallback summary:");
+  for (const warning of optionalLocaleWarnings) {
+    console.log(`  - ${warning}`);
+  }
+}

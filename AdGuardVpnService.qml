@@ -63,6 +63,7 @@ Item {
     property string routingMode: ""
     property bool changeSystemDns: false
     readonly property string tunnelLogPath: "$HOME/.local/share/adguardvpn-cli/tunnel.log"
+    readonly property string controlSocketPath: "$HOME/.local/share/adguardvpn-cli/vpn.socket"
 
     property var locations: []
     property string lastError: ""
@@ -520,7 +521,9 @@ Item {
     function connectFastest() {
         const args = buildArgs(["connect", "-f"], true);
 
-        runAction("connectFastest", args, t("app.title", "AdGuard VPN"), t("toast.fastest_selected", "Fastest location selected"));
+        runAction("connectFastest", args, t("app.title", "AdGuard VPN"), t("toast.fastest_selected", "Fastest location selected"), {
+            prepareDisconnectedRuntime: true
+        });
     }
 
     function resolveLocationTarget(locationText) {
@@ -561,7 +564,9 @@ Item {
 
         runAction("connectLocation", args, t("app.title", "AdGuard VPN"), t("toast.connecting_to", "Connecting to {location}", {
             location: rawTarget
-        }));
+        }), {
+            prepareDisconnectedRuntime: true
+        });
     }
 
     function disconnect() {
@@ -737,7 +742,64 @@ Item {
         }, 100);
     }
 
-    function runAction(operation, args, toastTitle, toastMessage) {
+    function prepareDisconnectedRuntime(callback) {
+        const tunPreflightRequired = (currentMode || "").toString().toLowerCase() !== "socks";
+        const prepScript = `
+            resolve_home() {
+                if [ -n "$HOME" ]; then
+                    printf '%s' "$HOME"
+                    return
+                fi
+                getent passwd "$(id -u)" | cut -d: -f6
+            }
+
+            HOME_DIR="$(resolve_home)"
+            SOCKET_PATH="${controlSocketPath}"
+            case "$SOCKET_PATH" in
+                '$HOME'/*)
+                    SOCKET_PATH="$HOME_DIR/\${SOCKET_PATH#'$HOME'/}"
+                    ;;
+            esac
+
+            if [ "${tunPreflightRequired ? "1" : "0"}" = "1" ] && command -v ip >/dev/null 2>&1; then
+                DEFAULT_ROUTE_COUNT="$(ip -o route show to default | wc -l | tr -d ' ')"
+                if [ "\${DEFAULT_ROUTE_COUNT:-0}" -gt 1 ]; then
+                    printf 'multi-default'
+                    exit 44
+                fi
+            fi
+
+            if [ ! -S "$SOCKET_PATH" ]; then
+                printf 'clean'
+                exit 0
+            fi
+
+            if command -v adguardvpn-cli >/dev/null 2>&1; then
+                adguardvpn-cli disconnect >/dev/null 2>&1 || true
+                sleep 1
+            fi
+
+            if command -v lsof >/dev/null 2>&1 && lsof -nP "$SOCKET_PATH" >/dev/null 2>&1; then
+                printf 'busy'
+                exit 42
+            fi
+
+            rm -f "$SOCKET_PATH" >/dev/null 2>&1 || true
+
+            if [ -S "$SOCKET_PATH" ]; then
+                printf 'stale'
+                exit 43
+            fi
+
+            printf 'cleaned'
+        `;
+
+        Proc.runCommand(`${pluginId}.prepareRuntime.${Date.now()}`, ["sh", "-lc", prepScript], (stdout, exitCode) => {
+            callback(cleanOutput(stdout), exitCode);
+        }, 100);
+    }
+
+    function runAction(operation, args, toastTitle, toastMessage, options) {
         if (!cliAvailable) {
             ToastService.showError(t("app.title", "AdGuard VPN"), t("toast.cli_unavailable", "adguardvpn-cli is unavailable"));
             return;
@@ -753,38 +815,66 @@ Item {
         lastError = "";
         suspendPolling();
 
-        runCli(operation, args, (stdout, exitCode) => {
-            commandRunning = false;
-            runningCommand = "";
-            resumePolling();
+        const executeAction = () => {
+            runningCommand = operation;
 
-            const clean = cleanOutput(stdout);
-            recordLastCommand(args, exitCode, clean);
-            if (exitCode === 0) {
-                if (toastTitle) {
-                    const firstLine = clean.split("\n").map(line => line.trim()).filter(Boolean)[0];
-                    ToastService.showInfo(toastTitle, firstLine || toastMessage || t("toast.done", "Done"));
+            runCli(operation, args, (stdout, exitCode) => {
+                commandRunning = false;
+                runningCommand = "";
+                resumePolling();
+
+                const clean = cleanOutput(stdout);
+                recordLastCommand(args, exitCode, clean);
+                if (exitCode === 0) {
+                    if (toastTitle) {
+                        const firstLine = clean.split("\n").map(line => line.trim()).filter(Boolean)[0];
+                        ToastService.showInfo(toastTitle, firstLine || toastMessage || t("toast.done", "Done"));
+                    }
+
+                    Qt.callLater(() => {
+                        refreshStatus();
+                        refreshConfig();
+                        refreshLicense();
+                    });
+                    return;
                 }
 
-                Qt.callLater(() => {
-                    refreshStatus();
-                    refreshConfig();
-                    refreshLicense();
+                lastError = clean || t("toast.operation_failed", "{operation} failed (code {code})", {
+                    operation: operation,
+                    code: exitCode
                 });
-                return;
-            }
-
-            lastError = clean || t("toast.operation_failed", "{operation} failed (code {code})", {
-                operation: operation,
-                code: exitCode
+                const hint = buildLocationHelpHint(lastError);
+                if (hint) {
+                    lastError = `${lastError}\n${hint}`;
+                }
+                ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
+                refreshStatus();
             });
-            const hint = buildLocationHelpHint(lastError);
-            if (hint) {
-                lastError = `${lastError}\n${hint}`;
-            }
-            ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
-            refreshStatus();
-        });
+        };
+
+        if (options && options.prepareDisconnectedRuntime) {
+            runningCommand = `${operation}.prepare`;
+            prepareDisconnectedRuntime((prepStatus, prepExitCode) => {
+                if (prepExitCode === 0) {
+                    executeAction();
+                    return;
+                }
+
+                commandRunning = false;
+                runningCommand = "";
+                resumePolling();
+                lastError = prepStatus === "multi-default"
+                    ? t("toast.multiple_default_routes", "Multiple default routes are active. Disconnect the redundant network interface before connecting in TUN mode.")
+                    : (prepStatus === "busy"
+                        ? t("toast.runtime_busy", "AdGuard VPN runtime is still busy after cleanup. Try again in a few seconds.")
+                        : t("toast.runtime_cleanup_failed", "Could not recover the AdGuard VPN runtime before connecting."));
+                ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
+                refreshStatus();
+            });
+            return;
+        }
+
+        executeAction();
     }
 
     Timer {

@@ -19,18 +19,18 @@
 | **Location tools** | Search & filter, favorites (⭐), ISO-code connect |
 | **Resilience** | Auto-connect on startup, auto-reconnect on tunnel drop |
 | **Diagnostics** | Last command log, tunnel log viewer, contextual error hints |
-| **Multilingual** | English + Português (BR) — community-extensible |
+| **Multilingual** | 22 languages with safe fallback (EN, PT-BR + 20 additional locales) |
 | **Robust parsers** | ANSI-safe, multi-format CLI output parsing |
 
 ---
 
 ## 📋 Requirements
 
-| Dependency | Version |
-| --- | --- |
-| DankMaterialShell | `>= 1.4.0` |
-| `adguardvpn-cli` | Any recent version — [install guide](https://github.com/AdguardTeam/AdGuardVPNCLI/) |
-| AdGuard account | Logged in (`adguardvpn-cli login`) |
+| Dependency        | Version                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| DankMaterialShell | `>= 1.4.0`                                                                          |
+| `adguardvpn-cli`  | Any recent version — [install guide](https://github.com/AdguardTeam/AdGuardVPNCLI/) |
+| AdGuard account   | Logged in (`adguardvpn-cli login`)                                                  |
 
 ---
 
@@ -60,19 +60,19 @@ Open **DMS Settings → Widgets** and add **AdGuard VPN** to your bar.
 
 All settings are configurable through the DMS plugin settings screen.
 
-| Setting | Type | Default | Description |
-| --- | --- | :---: | --- |
-| `adguardBinary` | string | `adguardvpn-cli` | CLI binary name or absolute path |
-| `refreshIntervalSec` | int | `8` | Status polling interval (3–120 s) |
-| `locationsCount` | int | `20` | How many locations to fetch (5–100) |
-| `connectStrategy` | enum | `fastest` | Default connect behavior: `fastest` or `location` |
-| `defaultLocation` | string | — | Preferred location (city, country, or ISO code) |
-| `ipStack` | enum | `auto` | Force `ipv4` or `ipv6` on connect |
-| `autoRefreshLocations` | bool | `true` | Periodically refresh ranked server list |
-| `autoConnectOnStartup` | bool | `false` | Auto-connect when plugin / session starts |
-| `autoReconnectOnDrop` | bool | `false` | Auto-reconnect when the tunnel drops unexpectedly |
-| `showLocationInBar` | bool | `true` | Display connection text next to bar icon |
-| `languageOverride` | enum | `auto` | UI language: `auto`, `en_US`, or `pt_BR` |
+| Setting                | Type   |     Default      | Description                                                                                                                                                                                                            |
+| ---------------------- | ------ | :--------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `adguardBinary`        | string | `adguardvpn-cli` | CLI binary name or absolute path                                                                                                                                                                                       |
+| `refreshIntervalSec`   | int    |       `8`        | Status polling interval (3–120 s)                                                                                                                                                                                      |
+| `locationsCount`       | int    |       `20`       | How many locations to fetch (5–100)                                                                                                                                                                                    |
+| `connectStrategy`      | enum   |    `fastest`     | Default connect behavior: `fastest` or `location`                                                                                                                                                                      |
+| `defaultLocation`      | string |        —         | Preferred location (city, country, or ISO code)                                                                                                                                                                        |
+| `ipStack`              | enum   |      `auto`      | Force `ipv4` or `ipv6` on connect                                                                                                                                                                                      |
+| `autoRefreshLocations` | bool   |      `true`      | Periodically refresh ranked server list                                                                                                                                                                                |
+| `autoConnectOnStartup` | bool   |     `false`      | Auto-connect when plugin / session starts                                                                                                                                                                              |
+| `autoReconnectOnDrop`  | bool   |     `false`      | Auto-reconnect when the tunnel drops unexpectedly                                                                                                                                                                      |
+| `showLocationInBar`    | bool   |      `true`      | Display connection text next to bar icon                                                                                                                                                                               |
+| `languageOverride`     | enum   |      `auto`      | UI language: `auto`, `en_US`, `pt_BR`, `es_ES`, `zh_CN`, `hi_IN`, `ar`, `bn_BD`, `fr_FR`, `de_DE`, `ja_JP`, `ru_RU`, `ko_KR`, `id_ID`, `tr_TR`, `vi_VN`, `it_IT`, `pl_PL`, `nl_NL`, `fa_IR`, `th_TH`, `ur_PK`, `ms_MY` |
 
 ---
 
@@ -90,6 +90,26 @@ adguardVPplugin/
 ├── i18n/
 │   ├── en.js                   # English (fallback)
 │   ├── pt_BR.js                # Português (Brasil)
+│   ├── es_ES.js                # Espanol
+│   ├── zh_CN.js                # Chinese (Simplified)
+│   ├── hi_IN.js                # Hindi
+│   ├── ar.js                   # Arabic
+│   ├── bn_BD.js                # Bengali
+│   ├── fr_FR.js                # French
+│   ├── de_DE.js                # German
+│   ├── ja_JP.js                # Japanese
+│   ├── ru_RU.js                # Russian
+│   ├── ko_KR.js                # Korean
+│   ├── id_ID.js                # Indonesian
+│   ├── tr_TR.js                # Turkish
+│   ├── vi_VN.js                # Vietnamese
+│   ├── it_IT.js                # Italian
+│   ├── pl_PL.js                # Polish
+│   ├── nl_NL.js                # Dutch
+│   ├── fa_IR.js                # Persian
+│   ├── th_TH.js                # Thai
+│   ├── ur_PK.js                # Urdu
+│   ├── ms_MY.js                # Malay
 │   └── README.md               # Translation guide
 ├── scripts/
 │   ├── check-i18n-keys.mjs     # i18n key parity checker
@@ -117,11 +137,11 @@ The plugin **only** executes local CLI commands through the DMS process API.
 No credentials are stored — secrets live in `adguardvpn-cli`'s own config.
 Network traffic is entirely managed by the CLI itself.
 
-| Permission | Purpose |
-| --- | --- |
-| `settings_read` | Load plugin settings |
-| `settings_write` | Persist plugin settings |
-| `process` | Execute `adguardvpn-cli` commands |
+| Permission       | Purpose                           |
+| ---------------- | --------------------------------- |
+| `settings_read`  | Load plugin settings              |
+| `settings_write` | Persist plugin settings           |
+| `process`        | Execute `adguardvpn-cli` commands |
 
 ---
 
@@ -195,7 +215,14 @@ bash scripts/validate-qml.sh       # QML syntax
 
 ## 🌐 Localization
 
-Ships with **English** and **Português (Brasil)**. Adding a new language is straightforward — see [i18n/README.md](./i18n/README.md).
+This plugin is now officially **multilang** and ships with:
+
+- **Full locales:** English, Português (Brasil)
+- **Extended locales with English fallback:**
+  Español, 中文 (简体), हिन्दी, العربية, বাংলা, Français, Deutsch, 日本語, Русский, 한국어,
+  Indonesia, Türkçe, Tiếng Việt, Italiano, Polski, Nederlands, فارسی, ไทย, اردو, Bahasa Melayu
+
+Adding or extending locales is straightforward — see [i18n/README.md](./i18n/README.md).
 
 ---
 
@@ -210,7 +237,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for workflow, quality checks, and relea
 Follow the [Release Checklist](./docs/RELEASE_CHECKLIST.md), then:
 
 ```bash
-git tag v1.1.0
+git tag v1.3.0
 git push origin main --tags
 ```
 

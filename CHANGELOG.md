@@ -9,6 +9,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ---
 
+## [1.3.0] - 2026-04-12
+
+### Added
+
+- Full UI refresh for widget popout and settings with hero panels, grouped sections, metric tiles, and improved action controls.
+- Runtime preflight before connect to recover stale control socket state and avoid unsafe reconnect attempts.
+- New connection safety checks for multi-default-route scenarios in TUN mode.
+- Multilingual expansion to 22 locales with new language bundles and locale mappings.
+- Expanded language selector with all new locale options in plugin settings.
+- i18n checker upgraded to validate all locale files and report fallback coverage per locale.
+
+### Fixed
+
+- Reduced connection failures caused by stale or busy AdGuard VPN runtime socket state.
+- Added explicit user-facing errors for runtime busy and multi-default-route conditions.
+
+### Changed
+
+- PT-BR terminology polished for clearer localized labels (for example: Estavel, Noturno, Servidor DNS, Automatico).
+- Localization docs now define strict parity for `pt_BR` and controlled fallback for extended locales.
+- README now documents full multilang coverage and current locale matrix.
+
+> **Full notes ->** [docs/releases/v1.3.0.md](./docs/releases/v1.3.0.md)
+
+---
+
 ## [1.2.0] - 2026-03-03
 
 ### Added
