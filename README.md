@@ -12,16 +12,16 @@
 
 ## ✨ Features
 
-| Category | What you get |
-| --- | --- |
-| **Live monitoring** | Real-time status, account info, config, and ranked locations |
-| **One-click actions** | Connect / Disconnect / Fastest / Location quick-connect |
-| **Runtime config** | Mode (TUN / SOCKS), Protocol (Auto / HTTP2 / QUIC), Update channel, DNS upstream |
-| **Location tools** | Search & filter, favorites (⭐), ISO-code connect |
-| **Resilience** | Auto-connect on startup, auto-reconnect on tunnel drop |
-| **Diagnostics** | Last command log, tunnel log viewer, contextual error hints |
-| **Multilingual** | 22 languages with safe fallback (EN, PT-BR + 20 additional locales) |
-| **Robust parsers** | ANSI-safe, multi-format CLI output parsing |
+| Category              | What you get                                                                     |
+| --------------------- | -------------------------------------------------------------------------------- |
+| **Live monitoring**   | Real-time status, account info, config, and ranked locations                     |
+| **One-click actions** | Connect / Disconnect / Fastest / Location quick-connect                          |
+| **Runtime config**    | Mode (TUN / SOCKS), Protocol (Auto / HTTP2 / QUIC), Update channel, DNS upstream |
+| **Location tools**    | Search & filter, favorites (⭐), ISO-code connect                                 |
+| **Resilience**        | Auto-connect on startup, auto-reconnect on tunnel drop                           |
+| **Diagnostics**       | Last command log, tunnel log viewer, contextual error hints                      |
+| **Multilingual**      | 22 languages with safe fallback (EN, PT-BR + 20 additional locales)              |
+| **Robust parsers**    | ANSI-safe, multi-format CLI output parsing                                       |
 
 ---
 
