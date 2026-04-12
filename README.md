@@ -4,8 +4,7 @@
 > Control, monitor, and configure **AdGuard VPN** directly from your DankBar — no terminal needed.
 
 <p align="center">
-  <img src="./docs/area-20260412-013448.png" alt="AdGuard VPN plugin screenshot - status and actions" width="460" />
-  <img src="./docs/area-20260412-013457.png" alt="AdGuard VPN plugin screenshot - locations and settings" width="460" />
+  <img src="./docs/screenshot.png" alt="AdGuard VPN plugin screenshot - status and actions" width="1000" />
 </p>
 
 ---
