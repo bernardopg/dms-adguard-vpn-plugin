@@ -9,6 +9,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ---
 
+## [1.3.2] - 2026-04-12
+
+### Changed
+
+- Updated README screenshots to the latest plugin UI captures for registry listing.
+- Adjusted README features table formatting for cleaner Markdown/registry rendering.
+- Removed obsolete screenshot assets from docs package.
+
+> **Full notes ->** [docs/releases/v1.3.2.md](./docs/releases/v1.3.2.md)
+
+---
+
 ## [1.3.1] - 2026-04-12
 
 ### Fixed
