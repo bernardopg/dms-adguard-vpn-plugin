@@ -9,6 +9,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ---
 
+## [1.3.1] - 2026-04-12
+
+### Fixed
+
+- Restored account detection when `adguardvpn-cli license` is slow by adding a longer command timeout and an in-flight refresh watchdog.
+- Improved license parsing compatibility for alternate output formats (email/plan/devices/renewal variants).
+- Avoided clearing valid account metadata when license output is partial or transiently empty.
+- Recorded last-command diagnostics even when connect preflight fails.
+- Fixed popup load regression caused by unsupported `selectByMouse` on `DankTextField`.
+- Updated PT-BR wording for the multiple default route warning: "rotas padrão".
+
+### Changed
+
+- Normalized Markdown table formatting in docs for cleaner lint output.
+
+> **Full notes ->** [docs/releases/v1.3.1.md](./docs/releases/v1.3.1.md)
+
+---
+
 ## [1.3.0] - 2026-04-12
 
 ### Added

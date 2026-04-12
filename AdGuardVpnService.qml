@@ -74,6 +74,8 @@ Item {
     property int lastCommandExitCode: -1
     property string lastCommandOutput: ""
     property double lastCommandAtMs: 0
+    property bool licenseRefreshInFlight: false
+    property double licenseRefreshStartedAtMs: 0
     property var pollingSnapshot: ({
             status: false,
             metadata: false,
@@ -209,13 +211,14 @@ Item {
         }
     }
 
-    function runCli(operation, args, callback) {
+    function runCli(operation, args, callback, timeoutTicks) {
         const commandId = `${pluginId}.${operation}.${Date.now()}`;
         const command = [adguardBinary].concat(args || []);
+        const timeoutValue = timeoutTicks !== undefined && timeoutTicks !== null ? timeoutTicks : 100;
 
         Proc.runCommand(commandId, command, (stdout, exitCode) => {
             callback(stdout || "", exitCode);
-        }, 100);
+        }, timeoutValue);
     }
 
     function checkCliAvailability() {
@@ -289,6 +292,9 @@ Item {
             statusSummary = t("status.connected", "Connected ({location})", {
                 location: connectedLocation
             });
+            if (!accountEmail && !licenseRefreshInFlight) {
+                refreshLicense();
+            }
             maybeScheduleReconnect(wasConnected, isConnected);
             return;
         }
@@ -309,15 +315,31 @@ Item {
         const clean = cleanOutput(stdout);
         lastLicenseRaw = clean;
 
-        if (exitCode !== 0) {
+        if (/not\s+logged\s+in|login\s+required|not\s+authorized/i.test(clean)) {
+            accountEmail = "";
+            accountTier = "";
+            maxDevices = 0;
+            subscriptionRenewDate = "";
+            return;
+        }
+
+        if (exitCode !== 0 && !clean) {
             return;
         }
 
         const parsed = AdGuardVpnParsers.parseLicenseOutput(clean);
-        accountEmail = parsed.accountEmail;
-        accountTier = parsed.accountTier;
-        maxDevices = parsed.maxDevices;
-        subscriptionRenewDate = parsed.subscriptionRenewDate;
+        if (parsed.accountEmail) {
+            accountEmail = parsed.accountEmail;
+        }
+        if (parsed.accountTier) {
+            accountTier = parsed.accountTier;
+        }
+        if (parsed.maxDevices > 0) {
+            maxDevices = parsed.maxDevices;
+        }
+        if (parsed.subscriptionRenewDate) {
+            subscriptionRenewDate = parsed.subscriptionRenewDate;
+        }
     }
 
     function parseConfig(stdout, exitCode) {
@@ -407,9 +429,22 @@ Item {
             return;
         }
 
+        const now = Date.now();
+        if (licenseRefreshInFlight) {
+            if ((now - licenseRefreshStartedAtMs) < 45000) {
+                return;
+            }
+            licenseRefreshInFlight = false;
+            licenseRefreshStartedAtMs = 0;
+        }
+
+        licenseRefreshInFlight = true;
+        licenseRefreshStartedAtMs = now;
         runCli("license", ["license"], (stdout, exitCode) => {
             parseLicense(stdout, exitCode);
-        });
+            licenseRefreshInFlight = false;
+            licenseRefreshStartedAtMs = 0;
+        }, 300);
     }
 
     function refreshLocations() {
@@ -726,8 +761,8 @@ Item {
             lastError = missingLog ? t("toast.log_missing", "Tunnel log file not found: {path}", {
                 path: tunnelLogPath
             }) : (openUnsupported ? t("toast.log_open_unsupported", "Could not open a terminal/editor automatically. Log: {path}", {
-                path: resolvedPath
-            }) : t("toast.log_open_failed", "Failed to open tunnel log"));
+                    path: resolvedPath
+                }) : t("toast.log_open_failed", "Failed to open tunnel log"));
 
             if (debugLine) {
                 lastError = `${lastError}\n${debugLine}`;
@@ -863,11 +898,8 @@ Item {
                 commandRunning = false;
                 runningCommand = "";
                 resumePolling();
-                lastError = prepStatus === "multi-default"
-                    ? t("toast.multiple_default_routes", "Multiple default routes are active. Disconnect the redundant network interface before connecting in TUN mode.")
-                    : (prepStatus === "busy"
-                        ? t("toast.runtime_busy", "AdGuard VPN runtime is still busy after cleanup. Try again in a few seconds.")
-                        : t("toast.runtime_cleanup_failed", "Could not recover the AdGuard VPN runtime before connecting."));
+                recordLastCommand(args, prepExitCode, prepStatus || "prepare_failed");
+                lastError = prepStatus === "multi-default" ? t("toast.multiple_default_routes", "Multiple default routes are active. Disconnect the redundant network interface before connecting in TUN mode.") : (prepStatus === "busy" ? t("toast.runtime_busy", "AdGuard VPN runtime is still busy after cleanup. Try again in a few seconds.") : t("toast.runtime_cleanup_failed", "Could not recover the AdGuard VPN runtime before connecting."));
                 ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
                 refreshStatus();
             });

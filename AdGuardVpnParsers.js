@@ -121,7 +121,26 @@ function parseLicenseOutput(clean) {
             continue;
         }
 
+        match = line.match(/^(?:Signed in as|Account(?: email)?|Email)\s*[:\-]\s*(.+)$/i);
+        if (match) {
+            accountEmail = match[1].trim();
+            continue;
+        }
+
+        if (!accountEmail) {
+            match = line.match(/([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i);
+            if (match) {
+                accountEmail = match[1].trim();
+            }
+        }
+
         match = line.match(/^You are using the\s+(.+?)\s+version$/i);
+        if (match) {
+            accountTier = match[1].trim();
+            continue;
+        }
+
+        match = line.match(/^(?:Plan|Tier|Subscription)\s*[:\-]\s*(.+)$/i);
         if (match) {
             accountTier = match[1].trim();
             continue;
@@ -133,7 +152,19 @@ function parseLicenseOutput(clean) {
             continue;
         }
 
+        match = line.match(/^(?:Devices|Max devices)\s*[:\-]\s*(\d+)/i);
+        if (match) {
+            maxDevices = parseInt(match[1], 10);
+            continue;
+        }
+
         match = line.match(/^Your subscription will be renewed on\s+([0-9]{4}-[0-9]{2}-[0-9]{2})$/i);
+        if (match) {
+            subscriptionRenewDate = match[1];
+            continue;
+        }
+
+        match = line.match(/^(?:Renewal|Renews on|Expires on)\s*[:\-]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})$/i);
         if (match) {
             subscriptionRenewDate = match[1];
         }

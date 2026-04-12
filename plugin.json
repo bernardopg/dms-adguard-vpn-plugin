@@ -2,7 +2,7 @@
   "id": "adguardVPplugin",
   "name": "AdGuard VPN",
   "description": "Control, configure, and monitor adguardvpn-cli directly from DankBar",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "author": "Bernardo Gomes",
   "type": "widget",
   "capabilities": ["vpn", "network", "dankbar-widget"],

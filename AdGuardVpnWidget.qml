@@ -16,14 +16,10 @@ PluginComponent {
     property string locationsSearchText: ""
     property string dnsInputText: ""
     property bool dnsInputFocused: false
-    property bool showLocationInBar: pluginData.showLocationInBar !== undefined
-        ? pluginData.showLocationInBar
-        : true
+    property bool showLocationInBar: pluginData.showLocationInBar !== undefined ? pluginData.showLocationInBar : true
 
     readonly property bool commandsAvailable: AdGuardVpnService.cliAvailable && !AdGuardVpnService.commandRunning
-    readonly property color heroAccent: !AdGuardVpnService.cliAvailable
-        ? Theme.warning
-        : (AdGuardVpnService.isConnected ? Theme.primary : Theme.surfaceText)
+    readonly property color heroAccent: !AdGuardVpnService.cliAvailable ? Theme.warning : (AdGuardVpnService.isConnected ? Theme.primary : Theme.surfaceText)
 
     readonly property var filteredLocations: {
         const source = AdGuardVpnService.locations || [];
@@ -224,9 +220,7 @@ PluginComponent {
                 width: compact ? 24 : 28
                 height: compact ? 24 : 28
                 radius: width / 2
-                color: buttonRoot.emphasized
-                    ? Theme.withAlpha(Theme.primary, 0.18)
-                    : Theme.withAlpha(Theme.surfaceText, 0.08)
+                color: buttonRoot.emphasized ? Theme.withAlpha(Theme.primary, 0.18) : Theme.withAlpha(Theme.surfaceText, 0.08)
 
                 DankIcon {
                     anchors.centerIn: parent
@@ -595,9 +589,7 @@ PluginComponent {
             id: popout
 
             headerText: root.t("app.title", "AdGuard VPN")
-            detailsText: AdGuardVpnService.cliAvailable
-                ? AdGuardVpnService.statusSummary
-                : root.t("popout.details.cli_unavailable", "adguardvpn-cli not available")
+            detailsText: AdGuardVpnService.cliAvailable ? AdGuardVpnService.statusSummary : root.t("popout.details.cli_unavailable", "adguardvpn-cli not available")
             showCloseButton: true
 
             Item {
@@ -800,9 +792,7 @@ PluginComponent {
                                     MetricTile {
                                         Layout.fillWidth: true
                                         label: root.t("meta.last_command", "Last command")
-                                        value: AdGuardVpnService.lastCommandText
-                                            ? `${AdGuardVpnService.lastCommandText} (${AdGuardVpnService.lastCommandExitCode})`
-                                            : root.t("meta.none", "None")
+                                        value: AdGuardVpnService.lastCommandText ? `${AdGuardVpnService.lastCommandText} (${AdGuardVpnService.lastCommandExitCode})` : root.t("meta.none", "None")
                                         accentColor: root.heroAccent
                                     }
 
@@ -821,12 +811,8 @@ PluginComponent {
                                     VpnActionButton {
                                         width: parent.width
                                         iconName: AdGuardVpnService.isConnected ? "link_off" : "link"
-                                        label: AdGuardVpnService.isConnected
-                                            ? root.t("action.disconnect", "Disconnect")
-                                            : root.t("action.connect", "Connect")
-                                        description: AdGuardVpnService.isConnected
-                                            ? root.t("hero.disconnect_description", "Drop the current tunnel and keep the control surface ready.")
-                                            : root.t("hero.connect_description", "Start the VPN using your preferred strategy and current runtime settings.")
+                                        label: AdGuardVpnService.isConnected ? root.t("action.disconnect", "Disconnect") : root.t("action.connect", "Connect")
+                                        description: AdGuardVpnService.isConnected ? root.t("hero.disconnect_description", "Drop the current tunnel and keep the control surface ready.") : root.t("hero.connect_description", "Start the VPN using your preferred strategy and current runtime settings.")
                                         prominent: true
                                         active: AdGuardVpnService.isConnected
                                         actionEnabled: root.commandsAvailable
@@ -964,9 +950,7 @@ PluginComponent {
                                                     radius: Theme.cornerRadius
                                                     color: Theme.surfaceContainer
                                                     border.width: 1
-                                                    border.color: locationsSearchInput.activeFocus
-                                                        ? Theme.primary
-                                                        : Theme.outlineVariant
+                                                    border.color: locationsSearchInput.activeFocus ? Theme.primary : Theme.outlineVariant
                                                 }
                                             }
                                         }
@@ -1017,9 +1001,7 @@ PluginComponent {
                                                     radius: Theme.cornerRadius
                                                     color: Theme.surfaceContainer
                                                     border.width: 1
-                                                    border.color: locationInput.activeFocus
-                                                        ? Theme.primary
-                                                        : Theme.outlineVariant
+                                                    border.color: locationInput.activeFocus ? Theme.primary : Theme.outlineVariant
                                                 }
                                             }
                                         }
@@ -1093,9 +1075,7 @@ PluginComponent {
                                 }
 
                                 EmptyStateCard {
-                                    visible: !AdGuardVpnService.commandRunning
-                                        && root.locationsSearchText.trim().length === 0
-                                        && root.filteredLocations.length === 0
+                                    visible: !AdGuardVpnService.commandRunning && root.locationsSearchText.trim().length === 0 && root.filteredLocations.length === 0
                                     title: root.t("locations.empty_title", "No ranked locations yet")
                                     body: root.t("locations.empty_body", "Fetch the latest list from the CLI to unlock quick-connect suggestions and favorites.")
                                     actionLabel: root.t("action.refresh", "Refresh")
@@ -1122,13 +1102,9 @@ PluginComponent {
                                             width: parent.width
                                             implicitHeight: locationRow.implicitHeight + Theme.spacingM * 2
                                             radius: Theme.cornerRadius
-                                            color: locationMouse.containsMouse
-                                                ? Theme.surfaceContainerHighest
-                                                : Theme.surfaceContainer
+                                            color: locationMouse.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainer
                                             border.width: 1
-                                            border.color: locationCard.favorite
-                                                ? Theme.withAlpha(Theme.primary, 0.28)
-                                                : Theme.withAlpha(Theme.surfaceText, 0.08)
+                                            border.color: locationCard.favorite ? Theme.withAlpha(Theme.primary, 0.28) : Theme.withAlpha(Theme.surfaceText, 0.08)
                                             scale: locationMouse.containsMouse ? 1.004 : 1.0
 
                                             Behavior on color {
@@ -1214,9 +1190,7 @@ PluginComponent {
                                                     StyledText {
                                                         id: pingLabel
                                                         anchors.centerIn: parent
-                                                        text: locationCard.locationItem.ping >= 0
-                                                            ? `${locationCard.locationItem.ping}ms`
-                                                            : "-"
+                                                        text: locationCard.locationItem.ping >= 0 ? `${locationCard.locationItem.ping}ms` : "-"
                                                         color: Theme.surfaceVariantText
                                                         font.pixelSize: Theme.fontSizeSmall - 1
                                                         font.weight: Font.Medium
@@ -1227,13 +1201,9 @@ PluginComponent {
                                                     width: 30
                                                     height: 30
                                                     radius: 15
-                                                    color: favoriteMouse.containsMouse
-                                                        ? Theme.withAlpha(Theme.primary, 0.16)
-                                                        : Theme.withAlpha(Theme.surfaceText, 0.06)
+                                                    color: favoriteMouse.containsMouse ? Theme.withAlpha(Theme.primary, 0.16) : Theme.withAlpha(Theme.surfaceText, 0.06)
                                                     border.width: 1
-                                                    border.color: locationCard.favorite
-                                                        ? Theme.withAlpha(Theme.primary, 0.28)
-                                                        : Theme.withAlpha(Theme.surfaceText, 0.08)
+                                                    border.color: locationCard.favorite ? Theme.withAlpha(Theme.primary, 0.28) : Theme.withAlpha(Theme.surfaceText, 0.08)
                                                     z: 2
 
                                                     DankIcon {
@@ -1399,7 +1369,6 @@ PluginComponent {
                                             focusedBorderColor: Theme.primary
                                             height: 42
                                             text: root.dnsInputText
-                                            selectByMouse: true
                                             onTextChanged: root.dnsInputText = text
                                             onFocusStateChanged: hasFocus => root.dnsInputFocused = hasFocus
                                         }

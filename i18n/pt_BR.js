@@ -36,7 +36,7 @@ var translations = ({
     "toast.reconnect_scheduled": "Conexão caiu. Reconectando...",
     "toast.runtime_busy": "O runtime do AdGuard VPN ainda está ocupado após a limpeza. Tente novamente em alguns segundos.",
     "toast.runtime_cleanup_failed": "Não foi possível recuperar o runtime do AdGuard VPN antes de conectar.",
-    "toast.multiple_default_routes": "Há múltiplas rotas default ativas. Desconecte a interface de rede redundante antes de conectar no modo TUN.",
+    "toast.multiple_default_routes": "Há múltiplas rotas padrão ativas. Desconecte a interface de rede redundante antes de conectar no modo TUN.",
     "hint.location_not_found": "Tente atualizar as localizações e usar o código ISO (ex.: BR).",
 
     "bar.cli": "CLI",
