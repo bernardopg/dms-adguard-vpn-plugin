@@ -317,4 +317,19 @@ PluginSettings {
         description: root.t("settings.auto_reconnect_drop.description", "Automatically reconnect when the tunnel drops unexpectedly.")
         defaultValue: false
     }
+
+    StyledText {
+        width: parent.width
+        text: root.t("settings.group.advanced", "Advanced")
+        font.pixelSize: Theme.fontSizeSmall
+        font.weight: Font.DemiBold
+        color: Theme.surfaceVariantText
+    }
+
+    ToggleSetting {
+        settingKey: "bypassMultiRouteCheck"
+        label: root.t("settings.bypass_multi_route.label", "Bypass Multi-Route Check")
+        description: root.t("settings.bypass_multi_route.description", "Skip the pre-connection check for multiple default routes. Enable if TUN connections are blocked by a false positive on startup or after disconnect.")
+        defaultValue: false
+    }
 }

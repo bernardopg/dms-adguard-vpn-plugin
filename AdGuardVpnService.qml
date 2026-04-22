@@ -21,7 +21,8 @@ Item {
             autoRefreshLocations: true,
             autoConnectOnStartup: false,
             autoReconnectOnDrop: false,
-            favoriteLocationIsos: []
+            favoriteLocationIsos: [],
+            bypassMultiRouteCheck: false
         })
 
     property string adguardBinary: defaults.adguardBinary
@@ -34,6 +35,7 @@ Item {
     property bool autoConnectOnStartup: defaults.autoConnectOnStartup
     property bool autoReconnectOnDrop: defaults.autoReconnectOnDrop
     property var favoriteLocationIsos: defaults.favoriteLocationIsos
+    property bool bypassMultiRouteCheck: defaults.bypassMultiRouteCheck
     property bool startupAutoConnectAttempted: false
     property bool suppressReconnectOnce: false
 
@@ -159,6 +161,7 @@ Item {
         autoConnectOnStartup = asBool(load("autoConnectOnStartup", defaults.autoConnectOnStartup), defaults.autoConnectOnStartup);
         autoReconnectOnDrop = asBool(load("autoReconnectOnDrop", defaults.autoReconnectOnDrop), defaults.autoReconnectOnDrop);
         favoriteLocationIsos = normalizeFavoriteLocationIsos(load("favoriteLocationIsos", defaults.favoriteLocationIsos));
+        bypassMultiRouteCheck = asBool(load("bypassMultiRouteCheck", defaults.bypassMultiRouteCheck), defaults.bypassMultiRouteCheck);
 
         restartTimers();
         checkCliAvailability();
@@ -796,8 +799,10 @@ Item {
                     ;;
             esac
 
-            if [ "${tunPreflightRequired ? "1" : "0"}" = "1" ] && command -v ip >/dev/null 2>&1; then
-                DEFAULT_ROUTE_COUNT="$(ip -o route show to default | wc -l | tr -d ' ')"
+            if [ "${tunPreflightRequired ? "1" : "0"}" = "1" ] && [ "${bypassMultiRouteCheck ? "1" : "0"}" = "0" ] && command -v ip >/dev/null 2>&1; then
+                _ROUTES="$(ip -o route show to default)"
+                _MIN_MET="$(printf '%s\n' "$_ROUTES" | awk '{m="0"; for(i=1;i<=NF;i++){if($i=="metric"){m=$(i+1);break}}; print m+0}' | sort -n | head -1)"
+                DEFAULT_ROUTE_COUNT="$(printf '%s\n' "$_ROUTES" | awk -v minm="$_MIN_MET" '{iface=""; m="0"; for(i=1;i<=NF;i++){if($i=="dev") iface=$(i+1); if($i=="metric") m=$(i+1)}; if(iface~/^(lo$|docker|veth|br-|virbr|dummy)/) next; if(m+0==minm+0) print}' | wc -l | tr -d ' ')"
                 if [ "\${DEFAULT_ROUTE_COUNT:-0}" -gt 1 ]; then
                     printf 'multi-default'
                     exit 44

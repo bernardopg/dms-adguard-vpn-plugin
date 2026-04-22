@@ -9,6 +9,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ---
 
+## [1.3.3] - 2026-04-22
+
+### Fixed
+
+- Multi-default-route preflight check now only counts routes sharing the minimum metric. Physical interfaces with different metrics (e.g. Ethernet metric 100 + Wi-Fi metric 600) are no longer treated as a routing conflict, eliminating false-positive TUN-connect blocks on startup and after every disconnect.
+- Virtual interfaces (`lo`, `docker*`, `veth*`, `br-*`, `virbr*`, `dummy*`) are excluded from the route count to prevent false positives from container runtimes.
+
+### Added
+
+- **Bypass Multi-Route Check** toggle in Settings → Advanced to explicitly skip the preflight route check on setups where it still produces false positives.
+
+> **Full notes ->** [docs/releases/v1.3.3.md](./docs/releases/v1.3.3.md)
+
+---
+
 ## [1.3.2] - 2026-04-12
 
 ### Changed

@@ -171,5 +171,8 @@ var translations = ({
     "settings.language.ur_PK": "Urdu",
     "settings.language.ms_MY": "Malay",
     "settings.unit.sec": "sec",
-    "settings.unit.items": "items"
+    "settings.unit.items": "items",
+    "settings.group.advanced": "Advanced",
+    "settings.bypass_multi_route.label": "Bypass Multi-Route Check",
+    "settings.bypass_multi_route.description": "Skip the pre-connection check for multiple default routes. Enable if TUN connections are blocked by a false positive on startup or after disconnect."
 });

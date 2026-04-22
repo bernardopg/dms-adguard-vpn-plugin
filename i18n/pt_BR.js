@@ -171,5 +171,8 @@ var translations = ({
     "settings.language.ur_PK": "Urdu",
     "settings.language.ms_MY": "Malaio",
     "settings.unit.sec": "seg",
-    "settings.unit.items": "itens"
+    "settings.unit.items": "itens",
+    "settings.group.advanced": "Avançado",
+    "settings.bypass_multi_route.label": "Ignorar Verificação de Múltiplas Rotas",
+    "settings.bypass_multi_route.description": "Ignora a verificação de múltiplas rotas padrão antes de conectar. Ative se conexões TUN forem bloqueadas por falso positivo na inicialização ou após desconexão."
 });
