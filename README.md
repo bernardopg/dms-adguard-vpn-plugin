@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD033 -->
 # 🛡️ AdGuard VPN — DankMaterialShell Plugin
 
-> Control, monitor, and configure **AdGuard VPN** directly from your DankBar — no terminal needed.
+> Control, monitor, and configure **AdGuard VPN** directly from your DankBar — no terminal needed. **Language / Idioma:** English is the primary documentation language. A Portuguese (Brazil) version is provided below for the same user-facing guidance.
 
 <p align="center">
   <img src="./docs/screenshot.png" alt="AdGuard VPN plugin screenshot - status and actions" width="1000" />
@@ -16,7 +16,7 @@
 | **Live monitoring**   | Real-time status, account info, config, and ranked locations                     |
 | **One-click actions** | Connect / Disconnect / Fastest / Location quick-connect                          |
 | **Runtime config**    | Mode (TUN / SOCKS), Protocol (Auto / HTTP2 / QUIC), Update channel, DNS upstream |
-| **Location tools**    | Search & filter, favorites, ISO-code connect                                     |
+| **Location tools**    | Search & filter, city/country quick-connect, favorites                           |
 | **Resilience**        | Auto-connect on startup, auto-reconnect on tunnel drop                           |
 | **Diagnostics**       | Last command log, tunnel log viewer, contextual error hints                      |
 | **Multilingual**      | 22 languages with safe fallback (EN, PT-BR + 20 additional locales)              |
@@ -122,7 +122,6 @@ adguardVPplugin/
 │   └── releases/               # Per-version release notes
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
-├── TODO.md
 └── LICENSE                     # MIT
 ```
 
@@ -175,7 +174,7 @@ adguardvpn-cli login
 <summary><strong>Location connect errors (city / country / ISO not found)</strong></summary>
 
 - Hit **Refresh** in the widget to update the location list.
-- Prefer **ISO codes** from the list (e.g. `BR`, `US`, `DE`).
+- Prefer the visible **city, country** label from the list, or an ISO code when you want the CLI to choose within a country.
 - If a saved preferred location is stale, update it in settings.
 
 </details>
@@ -246,5 +245,102 @@ Submit to the [DMS Plugin Registry](https://github.com/AvengeMedia/dms-plugin-re
 ---
 
 ## 📄 License
+
+[MIT](./LICENSE) — Bernardo Gomes
+
+---
+
+## Português (Brasil)
+
+> Controle, monitore e configure o **AdGuard VPN** diretamente pela DankBar — sem precisar abrir o terminal.
+
+### Recursos
+
+| Categoria | O que você recebe |
+| --- | --- |
+| **Monitoramento ao vivo** | Status, conta, configuração e localizações ranqueadas em tempo real |
+| **Ações em um clique** | Conectar / Desconectar / Mais rápida / Conectar por localização |
+| **Configuração em runtime** | Modo (TUN / SOCKS), Protocolo (Auto / HTTP2 / QUIC), canal de atualização e DNS upstream |
+| **Ferramentas de localização** | Busca, filtro, favoritos e conexão por cidade/país |
+| **Resiliência** | Auto-conectar ao iniciar e auto-reconectar em queda do túnel |
+| **Diagnóstico** | Último comando, visualizador do log do túnel e dicas contextuais de erro |
+| **Multilíngue** | 22 idiomas com fallback seguro (EN, PT-BR + 20 locales adicionais) |
+| **Parsers robustos** | Remoção de ANSI e parsing de múltiplos formatos de saída do CLI |
+
+### Requisitos
+
+| Dependência | Versão |
+| --- | --- |
+| DankMaterialShell | `>= 1.4.0` |
+| `adguardvpn-cli` | Qualquer versão recente; veja o guia oficial de instalação |
+| Conta AdGuard | Sessão iniciada com `adguardvpn-cli login` |
+
+### Instalação
+
+```bash
+git clone https://github.com/bernardopg/dms-adguard-vpn-plugin.git \
+  ~/.config/DankMaterialShell/plugins/adguardVPplugin
+
+dms ipc plugins reload adguardVPplugin
+dms ipc plugins enable adguardVPplugin
+```
+
+Depois, abra **DMS Settings → Widgets** e adicione **AdGuard VPN** à barra.
+
+### Configurações
+
+Todas as configurações ficam na tela de settings do plugin no DMS.
+
+| Configuração | Tipo | Padrão | Descrição |
+| --- | --- | --- | --- |
+| `adguardBinary` | string | `adguardvpn-cli` | Nome do binário ou caminho absoluto do CLI |
+| `refreshIntervalSec` | int | `8` | Intervalo de polling de status (3–120 s) |
+| `locationsCount` | int | `20` | Quantidade de localizações carregadas (5–100) |
+| `connectStrategy` | enum | `fastest` | Estratégia padrão: `fastest` ou `location` |
+| `defaultLocation` | string | — | Localização preferida: cidade, país ou ISO |
+| `ipStack` | enum | `auto` | Forçar IPv4 ou IPv6 nas conexões |
+| `autoRefreshLocations` | bool | `true` | Atualizar lista de localizações periodicamente |
+| `autoConnectOnStartup` | bool | `false` | Conectar automaticamente ao iniciar plugin/sessão |
+| `autoReconnectOnDrop` | bool | `false` | Reconectar se o túnel cair inesperadamente |
+| `showLocationInBar` | bool | `true` | Mostrar texto/localização ao lado do ícone |
+| `languageOverride` | enum | `auto` | Idioma da UI; `auto` segue o locale do sistema |
+
+### Segurança e permissões
+
+O plugin executa apenas comandos locais pelo processo do DMS. Credenciais não são armazenadas pelo plugin; elas ficam no próprio `adguardvpn-cli`.
+
+| Permissão | Finalidade |
+| --- | --- |
+| `settings_read` | Ler configurações do plugin |
+| `settings_write` | Persistir configurações do plugin |
+| `process` | Executar comandos locais do `adguardvpn-cli` |
+
+### Solução de problemas
+
+Se o CLI aparecer como indisponível, verifique:
+
+```bash
+adguardvpn-cli --version
+```
+
+Se usa caminho customizado, atualize `adguardBinary` nas configurações. Para problemas de sessão, rode `adguardvpn-cli login`. Para erros de localização, atualize a lista no widget e prefira o rótulo visível `cidade, país`; use ISO quando quiser deixar o CLI escolher dentro do país.
+
+### Desenvolvimento
+
+Loop recomendado:
+
+```bash
+dms ipc plugins reload adguardVPplugin
+```
+
+Checks antes de commitar:
+
+```bash
+node scripts/check-i18n-keys.mjs
+bash scripts/lint-markdown.sh
+bash scripts/validate-qml.sh
+```
+
+### Licença
 
 [MIT](./LICENSE) — Bernardo Gomes

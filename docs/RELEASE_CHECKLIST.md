@@ -2,6 +2,8 @@
 
 Step-by-step process for publishing a new plugin version. Ensures consistency across manifest, changelog, and release notes.
 
+> **Language / Idioma:** English is primary. Portuguese (Brazil) translation follows the English checklist.
+
 ---
 
 ## 1. Bump Version
@@ -60,3 +62,60 @@ git push origin main --tags
 
 - [ ] Open/update the registry submission PR at [AvengeMedia/dms-plugin-registry](https://github.com/AvengeMedia/dms-plugin-registry) with the new version.
 - [ ] Confirm the registry CI validates the updated `plugin.json`.
+
+---
+
+## Português (Brasil)
+
+Processo para publicar uma nova versão do plugin mantendo manifest, changelog e release notes consistentes.
+
+### 1. Atualizar versão
+
+- [ ] Escolha a nova versão semântica, como `1.2.0`.
+- [ ] Atualize `"version"` em `plugin.json`.
+- [ ] Verifique se `"requires_dms"` ainda corresponde aos recursos usados.
+
+### 2. Atualizar documentação de release
+
+- [ ] Mova entradas de `[Unreleased]` no `CHANGELOG.md` para uma nova seção `## [x.y.z] — YYYY-MM-DD`.
+- [ ] Crie `docs/releases/vX.Y.Z.md` com destaques e notas de compatibilidade.
+- [ ] Confirme que `plugin.json`, `CHANGELOG.md` e `docs/releases/` apontam para a mesma versão.
+
+### 3. Rodar checks de qualidade
+
+```bash
+node scripts/check-i18n-keys.mjs
+bash scripts/lint-markdown.sh
+bash scripts/validate-qml.sh
+```
+
+- [ ] Os três checks passam sem erro.
+
+### 4. Validação manual
+
+```bash
+dms ipc plugins reload adguardVPplugin
+dms ipc plugins status adguardVPplugin
+```
+
+Verifique no widget/popout:
+
+- [ ] Conectar / Desconectar funciona.
+- [ ] Conectar pela localização mais rápida e por localização específica funciona.
+- [ ] Status, configuração e licença atualizam corretamente.
+- [ ] Favoritos, busca e automações funcionam como esperado.
+- [ ] Não há erro crítico no fluxo principal.
+
+### 5. Commit e tag
+
+```bash
+git add -A
+git commit -m "release: vX.Y.Z"
+git tag vX.Y.Z
+git push origin main --tags
+```
+
+### 6. Publicação
+
+- [ ] Abra ou atualize o PR de submissão no registro [AvengeMedia/dms-plugin-registry](https://github.com/AvengeMedia/dms-plugin-registry).
+- [ ] Confirme que o CI do registro valida o `plugin.json` atualizado.

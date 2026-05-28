@@ -2,6 +2,8 @@
 
 This document describes the internal design and data flow of the AdGuard VPN plugin.
 
+> **Language / Idioma:** English is primary. Portuguese (Brazil) translation follows the English architecture notes.
+
 ---
 
 ## Layer Overview
@@ -19,7 +21,7 @@ The plugin is organized into **four layers**, each with a single responsibility:
 │   polling · actions · state · buildArgs · parsers     │
 ├──────────────────────────────────────────────────────┤
 │               AdGuardVpnI18n  (singleton)              │
-│              i18n/en.js · i18n/pt_BR.js                │
+│              i18n/en.js · i18n/<locale>.js             │
 ├──────────────────────────────────────────────────────┤
 │       AdGuardVpnParsers.js  (.pragma library)         │
 │   parseStatusOutput · parseConfigOutput · …           │
@@ -45,9 +47,11 @@ The plugin is organized into **four layers**, each with a single responsibility:
 
 ```text
 1. Startup
-   Component.onCompleted → loadSettings() → checkCliAvailability()
-                                          → restartTimers()
+   Component.onCompleted → loadSettings() → restartTimers()
+                                          → checkCliAvailability()
+                                          → refreshAll(true)
                                           → maybeAutoConnectOnStartup()
+                                            only after initial status + config are known
 
 2. Polling (repeating timers)
    statusTimer ──→ refreshStatus()  ──→ runCli("status")  ──→ parseStatus()
@@ -90,7 +94,9 @@ During write actions (`runAction`), all timers are **suspended** to avoid confli
 - **Config writes:** `setMode()`, `setProtocol()`, `setUpdateChannel()`, `setDns()`
 - **Utilities:** `openTunnelLog()`, `toggleFavoriteLocation()`
 
-All actions use `buildArgs()` to append `-y`, `--no-progress`, and IP stack flags consistently.
+Connect actions use `prepareDisconnectedRuntime()` before invoking the CLI. The preflight checks for conflicting same-metric default routes in TUN mode, asks the configured `adguardBinary` to disconnect an existing runtime, verifies the control socket is not busy with `lsof`/`fuser`, and removes stale socket files when safe.
+
+All connect actions use `buildArgs()` to append `-y`, `--no-progress`, and IP stack flags consistently.
 
 ### Reconnect Logic
 
@@ -121,7 +127,7 @@ The location parser tries **five column-splitting strategies** in order: multi-s
 - **Popout sections:**
   - Status card (connection state, account, last sync, diagnostics)
   - Quick actions (connect/disconnect, fastest, refresh, open log)
-  - Locations (search filter, favorites, quick-connect by ISO)
+  - Locations (search filter, per-location favorites, quick-connect by city/country target)
   - Configuration (mode, protocol, update channel, DNS)
 - All labels go through `AdGuardVpnI18n.tr(key, fallback, params)`.
 
@@ -153,3 +159,60 @@ The location parser tries **five column-splitting strategies** in order: multi-s
 | `settings_read` | Load plugin settings from DMS storage |
 | `settings_write` | Persist plugin settings (polling interval, strategy, favorites, etc.) |
 | `process` | Execute local `adguardvpn-cli` commands via `Proc.runCommand` |
+
+---
+
+## Português (Brasil)
+
+Este documento descreve o desenho interno e o fluxo de dados do plugin AdGuard VPN.
+
+### Visão de camadas
+
+O plugin é organizado em quatro camadas com responsabilidades separadas:
+
+| Camada | Arquivos | Responsabilidade |
+| --- | --- | --- |
+| **UI** | `AdGuardVpnWidget.qml` | Ícone/barra, popout, controles, lista de localizações e cards de configuração |
+| **Settings** | `AdGuardVpnSettings.qml` | Controles declarativos de configuração do DMS |
+| **Service** | `AdGuardVpnService.qml` | Singleton de settings, execução do CLI, polling e estado |
+| **Localização** | `AdGuardVpnI18n.qml` + `i18n/*.js` | Traduções com fallback |
+| **Parsers** | `AdGuardVpnParsers.js` | Funções puras para transformar saída do CLI em dados estruturados |
+
+### Fluxo de dados
+
+1. No startup, `loadSettings()` reinicia timers, valida o CLI, chama `refreshAll(true)` e só tenta auto-conectar quando status e configuração iniciais já são conhecidos.
+2. Timers chamam `refreshStatus()`, `refreshConfig()`, `refreshLicense()` e `refreshLocations()` em intervalos derivados de `refreshIntervalSec`.
+3. A UI nunca executa comandos diretamente. Ela chama métodos do `AdGuardVpnService`, que suspende polling durante ações de escrita, executa o CLI e atualiza propriedades observáveis.
+
+### Responsabilidades do Service
+
+- Carregar e normalizar settings via `PluginService.loadPluginData()`.
+- Persistir mudanças pontuais com `saveSetting(key, value)`.
+- Executar `adguardvpn-cli` por `Proc.runCommand()` usando `adguardBinary` configurado.
+- Montar argumentos de conexão com `buildArgs()`.
+- Rodar `prepareDisconnectedRuntime()` antes de conectar.
+- Controlar auto-reconnect e suppressão após disconnect explícito.
+
+### Preflight de conexão
+
+Antes de conectar, `prepareDisconnectedRuntime()` verifica conflitos de rota em modo TUN, chama `disconnect` pelo binário configurado, testa se o socket de controle está ocupado com `lsof`/`fuser` e remove socket obsoleto quando seguro.
+
+### Parsers
+
+Os parsers ficam em `.pragma library` e não dependem de estado QML. Eles interpretam status, licença, configuração e localizações. A saída ANSI é removida antes do parsing.
+
+### UI e settings
+
+O widget mostra status, conta, diagnóstico, ações rápidas, localizações favoritas por cidade/país e controles de configuração. A tela de settings persiste valores; ela não chama o CLI diretamente.
+
+### Tratamento de erro
+
+Falhas de comando atualizam `lastError`, exibem toast, e disparam refresh de status quando necessário. Saída vazia ou formato inesperado cai para estados seguros como “Unknown” ou “No output”.
+
+### Modelo de permissões
+
+| Permissão | Motivo |
+| --- | --- |
+| `settings_read` | Ler configurações do DMS |
+| `settings_write` | Persistir polling, estratégia, favoritos e preferências |
+| `process` | Executar comandos locais do `adguardvpn-cli` |

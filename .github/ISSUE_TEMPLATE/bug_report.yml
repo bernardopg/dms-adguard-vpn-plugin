@@ -1,5 +1,5 @@
-name: Bug report
-description: Reportar erro de funcionamento no plugin AdGuard VPN
+name: Bug report / Relatar bug
+description: Report a malfunction in the AdGuard VPN plugin / Reportar erro de funcionamento no plugin AdGuard VPN
 title: "[Bug]: "
 labels:
   - bug
@@ -7,64 +7,66 @@ body:
   - type: markdown
     attributes:
       value: |
-        Obrigado por reportar! Preencha os campos abaixo para facilitar a reprodução.
+        Thanks for reporting. Fill in the fields below so we can reproduce the issue.
+
+        Obrigado por reportar. Preencha os campos abaixo para facilitar a reprodução.
 
   - type: textarea
     id: summary
     attributes:
-      label: Resumo
-      description: O que está quebrado?
-      placeholder: Ex.: Conectar por localização retorna erro mesmo com ISO válido.
+      label: Summary / Resumo
+      description: What is broken? / O que está quebrado?
+      placeholder: "Example / Ex.: Connecting by location returns an error even with a valid ISO."
     validations:
       required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: Passos para reproduzir
-      description: Liste passos claros e objetivos.
+      label: Steps to reproduce / Passos para reproduzir
+      description: List clear and objective steps. / Liste passos claros e objetivos.
       placeholder: |
-        1. Abrir popout do widget
-        2. Clicar em uma localização
-        3. Observar erro no toast
+        1. Open the widget popout / Abrir o popout do widget
+        2. Click a location / Clicar em uma localização
+        3. Observe the toast error / Observar erro no toast
     validations:
       required: true
 
   - type: textarea
     id: expected
     attributes:
-      label: Comportamento esperado
+      label: Expected behavior / Comportamento esperado
     validations:
       required: true
 
   - type: textarea
     id: actual
     attributes:
-      label: Comportamento atual
+      label: Actual behavior / Comportamento atual
     validations:
       required: true
 
   - type: input
     id: plugin-version
     attributes:
-      label: Versão do plugin
-      placeholder: ex.: 1.1.0
+      label: Plugin version / Versão do plugin
+      placeholder: "e.g. / ex.: 1.3.3"
     validations:
       required: true
 
   - type: input
     id: dms-version
     attributes:
-      label: Versão do DankMaterialShell
-      placeholder: ex.: 1.4.0
+      label: DankMaterialShell version / Versão do DankMaterialShell
+      placeholder: "e.g. / ex.: 1.4.0"
     validations:
       required: false
 
   - type: textarea
     id: logs
     attributes:
-      label: Logs/saída relevante
-      description: Cole trechos de log/erro (sem segredos).
+      label: Relevant logs/output / Logs/saída relevante
+      description: Paste log/error snippets without secrets. / Cole trechos de log/erro sem segredos.
       render: shell
     validations:
       required: false

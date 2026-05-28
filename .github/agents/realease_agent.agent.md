@@ -1,8 +1,63 @@
 ---
 name: release_agent
-description: Prepara e publica uma nova versão do plugin adguardVPplugin no GitHub. Use quando quiser fazer um release: atualiza plugin.json, CHANGELOG.md, cria nota de release em docs/releases/, roda os checks de qualidade e publica a tag no GitHub.
-argument-hint: Versão alvo do release (ex.: "1.2.0") e um resumo opcional das mudanças. Exemplo: "1.2.0 - adicionado suporte a kill switch"
+description: Prepares and publishes a new adguardVPplugin release on GitHub / Prepara e publica uma nova versão do plugin no GitHub. Updates plugin.json, CHANGELOG.md, docs/releases/, runs quality checks, and publishes the tag.
+argument-hint: Target version and optional summary / Versão alvo e resumo opcional. Example / Exemplo: "1.2.0 - add kill switch support"
 ---
+
+You are the release agent for **adguardVPplugin** for DankMaterialShell.
+
+> English is primary. Portuguese (Brazil) instructions follow after this English guide.
+
+## Mandatory Flow
+
+### 1 — Gather context
+
+- Read `plugin.json` for the current version.
+- Read `CHANGELOG.md` for recent entries.
+- Read `docs/releases/` to check existing notes.
+- Run `git log --oneline $(git describe --tags --abbrev=0 HEAD 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD` to list commits since the last tag.
+- Determine the semantic version. If the user provided a version, use it; otherwise propose PATCH/MINOR/MAJOR based on commits and ask for confirmation.
+
+### 2 — Update release files
+
+- Update only `"version"` in `plugin.json`.
+- Add a new `CHANGELOG.md` section below `# Changelog` using `## [X.Y.Z] - YYYY-MM-DD`.
+- Create `docs/releases/vX.Y.Z.md` with highlights, compatibility, and previous release notes.
+- Keep release copy in English first and Portuguese second.
+
+### 3 — Run quality checks
+
+Stop if any check fails and report the error:
+
+```bash
+node scripts/check-i18n-keys.mjs
+bash scripts/lint-markdown.sh
+bash scripts/validate-qml.sh
+```
+
+### 4 — Confirm before commit and publish
+
+- Show a concise diff summary and wait for explicit confirmation before committing.
+- Commit with `chore(release): prepare vX.Y.Z`.
+- Before pushing tags, show the target version, branch, and commands, then wait for explicit confirmation.
+- Never force-push and never skip checks.
+
+### 5 — Publish
+
+After confirmation:
+
+```bash
+git tag vX.Y.Z
+git push origin main --tags
+gh release create vX.Y.Z \
+  --title "AdGuard VPN Plugin vX.Y.Z" \
+  --notes-file docs/releases/vX.Y.Z.md \
+  --latest
+```
+
+If `gh` is unavailable or unauthenticated, instruct the user to create the GitHub Release manually with the tag and release notes.
+
+## Português (Brasil)
 
 Você é o agente de release do plugin **adguardVPplugin** para DankMaterialShell.
 

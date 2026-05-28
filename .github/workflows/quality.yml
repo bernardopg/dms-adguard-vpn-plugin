@@ -8,24 +8,25 @@ on:
 
 jobs:
   quality:
-    name: Lint Markdown + Validate QML
+    name: Quality docs/i18n/QML
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6.4.0
         with:
           node-version: "20"
 
       - name: Install Qt tools
         run: |
           sudo apt-get update
-          # Try every known package that ships a QML formatter across distros.
-          # Never fail the step — the validate script handles missing binaries
-          # gracefully (warning only).
+          # EN: Try every known package that ships a QML formatter across distros.
+          # PT-BR: Tenta cada pacote conhecido que fornece um formatador QML.
+          # EN: Never fail the step; the validation script handles missing binaries gracefully.
+          # PT-BR: Não falha esta etapa; o script trata binários ausentes como aviso.
           for pkg in qt6-declarative-dev-tools qml6-tools qml6format qmlformat; do
             sudo apt-get install -y "$pkg" 2>/dev/null && break || true
           done
@@ -34,8 +35,11 @@ jobs:
           command -v qml6format 2>/dev/null && echo "  found: qml6format" || true
           command -v qmlformat6 2>/dev/null && echo "  found: qmlformat6" || true
 
-      - name: Lint Markdown
+      - name: Lint Markdown / Validar Markdown
         run: bash scripts/lint-markdown.sh
 
-      - name: Validate QML syntax
+      - name: Check i18n keys / Validar chaves i18n
+        run: node scripts/check-i18n-keys.mjs
+
+      - name: Validate QML syntax / Validar sintaxe QML
         run: bash scripts/validate-qml.sh

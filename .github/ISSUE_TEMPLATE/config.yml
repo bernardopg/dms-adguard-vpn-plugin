@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Documentação do plugin
+  - name: Plugin documentation / Documentação do plugin
     url: https://github.com/bernardopg/dms-adguard-vpn-plugin/blob/main/README.md
-    about: Consulte requisitos, troubleshooting e guia de uso.
+    about: Read requirements, troubleshooting, and usage guide. / Consulte requisitos, troubleshooting e guia de uso.

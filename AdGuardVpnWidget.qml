@@ -28,7 +28,7 @@ PluginComponent {
 
         for (let i = 0; i < source.length; i++) {
             const item = source[i] || {};
-            if (AdGuardVpnService.isFavoriteLocation(item.iso)) {
+            if (AdGuardVpnService.isFavoriteLocation(item)) {
                 favorites.push(item);
             } else {
                 others.push(item);
@@ -1097,7 +1097,8 @@ PluginComponent {
 
                                             required property int index
                                             readonly property var locationItem: root.filteredLocations[index]
-                                            readonly property bool favorite: AdGuardVpnService.isFavoriteLocation(locationItem.iso)
+                                            readonly property string connectionTarget: AdGuardVpnService.locationTarget(locationItem)
+                                            readonly property bool favorite: AdGuardVpnService.isFavoriteLocation(locationItem)
 
                                             width: parent.width
                                             implicitHeight: locationRow.implicitHeight + Theme.spacingM * 2
@@ -1130,7 +1131,7 @@ PluginComponent {
                                                 anchors.fill: parent
                                                 hoverEnabled: true
                                                 cursorShape: Qt.PointingHandCursor
-                                                onClicked: AdGuardVpnService.connectToLocation(locationCard.locationItem.iso)
+                                                onClicked: AdGuardVpnService.connectToLocation(locationCard.connectionTarget)
                                             }
 
                                             RowLayout {
@@ -1218,7 +1219,7 @@ PluginComponent {
                                                         anchors.fill: parent
                                                         hoverEnabled: true
                                                         cursorShape: Qt.PointingHandCursor
-                                                        onClicked: AdGuardVpnService.toggleFavoriteLocation(locationCard.locationItem.iso)
+                                                        onClicked: AdGuardVpnService.toggleFavoriteLocation(locationCard.locationItem)
                                                     }
                                                 }
                                             }

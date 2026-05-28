@@ -21,7 +21,7 @@ Item {
             autoRefreshLocations: true,
             autoConnectOnStartup: false,
             autoReconnectOnDrop: false,
-            favoriteLocationIsos: [],
+            favoriteLocationTargets: [],
             bypassMultiRouteCheck: false
         })
 
@@ -34,9 +34,13 @@ Item {
     property bool autoRefreshLocations: defaults.autoRefreshLocations
     property bool autoConnectOnStartup: defaults.autoConnectOnStartup
     property bool autoReconnectOnDrop: defaults.autoReconnectOnDrop
-    property var favoriteLocationIsos: defaults.favoriteLocationIsos
+    property var favoriteLocationTargets: defaults.favoriteLocationTargets
     property bool bypassMultiRouteCheck: defaults.bypassMultiRouteCheck
+    property bool initialSettingsLoaded: false
     property bool startupAutoConnectAttempted: false
+    property bool startupAutoConnectEnabled: false
+    property bool startupStatusKnown: false
+    property bool startupConfigKnown: false
     property bool suppressReconnectOnce: false
 
     property bool cliAvailable: false
@@ -109,6 +113,22 @@ Item {
         if (value === undefined || value === null) {
             return fallback;
         }
+        if (typeof value === "boolean") {
+            return value;
+        }
+        if (typeof value === "string") {
+            const cleaned = value.toLowerCase().trim();
+            if (["true", "1", "yes", "on"].indexOf(cleaned) >= 0) {
+                return true;
+            }
+            if (["false", "0", "no", "off"].indexOf(cleaned) >= 0) {
+                return false;
+            }
+            return fallback;
+        }
+        if (typeof value === "number") {
+            return value !== 0;
+        }
         return !!value;
     }
 
@@ -128,18 +148,39 @@ Item {
         return stripAnsi(text || "").replace(/\r/g, "").trim();
     }
 
-    function normalizeFavoriteLocationIsos(value) {
+    function normalizeLocationTarget(value) {
+        const text = (value || "").toString().replace(/\s+/g, " ").trim();
+        if (/^[A-Z]{2}$/i.test(text)) {
+            return text.toUpperCase();
+        }
+        return text;
+    }
+
+    function locationTarget(locationItem) {
+        const item = locationItem || {};
+        const iso = normalizeLocationTarget(item.iso || "");
+        const country = normalizeLocationTarget(item.country || "");
+        const city = normalizeLocationTarget(item.city || "");
+
+        if (city && country) {
+            return `${city}, ${country}`;
+        }
+        return city || country || iso;
+    }
+
+    function normalizeFavoriteLocationTargets(value) {
         const list = [];
         const seen = ({});
         const source = Array.isArray(value) ? value : [];
 
         for (let i = 0; i < source.length; i++) {
-            const iso = (source[i] || "").toString().trim().toUpperCase();
-            if (!/^[A-Z]{2}$/.test(iso) || seen[iso]) {
+            const target = normalizeLocationTarget(source[i]);
+            const key = target.toLowerCase();
+            if (!target || target.length > 120 || seen[key]) {
                 continue;
             }
-            seen[iso] = true;
-            list.push(iso);
+            seen[key] = true;
+            list.push(target);
         }
 
         return list;
@@ -160,8 +201,16 @@ Item {
         autoRefreshLocations = asBool(load("autoRefreshLocations", defaults.autoRefreshLocations), defaults.autoRefreshLocations);
         autoConnectOnStartup = asBool(load("autoConnectOnStartup", defaults.autoConnectOnStartup), defaults.autoConnectOnStartup);
         autoReconnectOnDrop = asBool(load("autoReconnectOnDrop", defaults.autoReconnectOnDrop), defaults.autoReconnectOnDrop);
-        favoriteLocationIsos = normalizeFavoriteLocationIsos(load("favoriteLocationIsos", defaults.favoriteLocationIsos));
+        const storedFavoriteTargets = PluginService.loadPluginData(pluginId, "favoriteLocationTargets");
+        const legacyFavoriteIsos = PluginService.loadPluginData(pluginId, "favoriteLocationIsos");
+        const favoriteSource = storedFavoriteTargets !== undefined && storedFavoriteTargets !== null ? storedFavoriteTargets : (legacyFavoriteIsos !== undefined && legacyFavoriteIsos !== null ? legacyFavoriteIsos : defaults.favoriteLocationTargets);
+        favoriteLocationTargets = normalizeFavoriteLocationTargets(favoriteSource);
         bypassMultiRouteCheck = asBool(load("bypassMultiRouteCheck", defaults.bypassMultiRouteCheck), defaults.bypassMultiRouteCheck);
+
+        if (!initialSettingsLoaded) {
+            startupAutoConnectEnabled = autoConnectOnStartup;
+            initialSettingsLoaded = true;
+        }
 
         restartTimers();
         checkCliAvailability();
@@ -171,30 +220,52 @@ Item {
         PluginService.savePluginData(pluginId, key, value);
     }
 
-    function isFavoriteLocation(iso) {
-        const normalizedIso = (iso || "").toString().trim().toUpperCase();
-        if (!/^[A-Z]{2}$/.test(normalizedIso)) {
+    function isFavoriteLocation(locationItem) {
+        const target = locationTarget(locationItem);
+        const iso = normalizeLocationTarget((locationItem || {}).iso || "");
+        if (!target && !iso) {
             return false;
         }
-        return favoriteLocationIsos.indexOf(normalizedIso) >= 0;
+
+        const targetKey = target.toLowerCase();
+        const isoKey = iso.toLowerCase();
+        for (let i = 0; i < favoriteLocationTargets.length; i++) {
+            const favoriteKey = normalizeLocationTarget(favoriteLocationTargets[i]).toLowerCase();
+            if (favoriteKey === targetKey || (isoKey && favoriteKey === isoKey)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    function toggleFavoriteLocation(iso) {
-        const normalizedIso = (iso || "").toString().trim().toUpperCase();
-        if (!/^[A-Z]{2}$/.test(normalizedIso)) {
+    function toggleFavoriteLocation(locationItem) {
+        const target = locationTarget(locationItem);
+        const iso = normalizeLocationTarget((locationItem || {}).iso || "");
+        if (!target) {
             return;
         }
 
-        const next = favoriteLocationIsos.slice();
-        const index = next.indexOf(normalizedIso);
+        const next = favoriteLocationTargets.slice();
+        const targetKey = target.toLowerCase();
+        const isoKey = iso.toLowerCase();
+        let index = -1;
+
+        for (let i = 0; i < next.length; i++) {
+            const favoriteKey = normalizeLocationTarget(next[i]).toLowerCase();
+            if (favoriteKey === targetKey || (isoKey && favoriteKey === isoKey)) {
+                index = i;
+                break;
+            }
+        }
+
         if (index >= 0) {
             next.splice(index, 1);
         } else {
-            next.push(normalizedIso);
+            next.push(target);
         }
 
-        favoriteLocationIsos = normalizeFavoriteLocationIsos(next);
-        saveSetting("favoriteLocationIsos", favoriteLocationIsos);
+        favoriteLocationTargets = normalizeFavoriteLocationTargets(next);
+        saveSetting("favoriteLocationTargets", favoriteLocationTargets);
     }
 
     function restartTimers() {
@@ -242,7 +313,6 @@ Item {
 
             lastError = "";
             refreshAll(true);
-            maybeAutoConnectOnStartup();
         });
     }
 
@@ -251,6 +321,7 @@ Item {
         const clean = cleanOutput(stdout);
         lastStatusRaw = clean;
         lastRefreshMs = Date.now();
+        startupStatusKnown = exitCode === 0;
 
         if (exitCode !== 0) {
             isConnected = false;
@@ -353,6 +424,8 @@ Item {
             return;
         }
 
+        startupConfigKnown = true;
+
         const parsed = AdGuardVpnParsers.parseConfigOutput(clean, {
             currentMode: currentMode,
             currentProtocol: currentProtocol,
@@ -414,6 +487,7 @@ Item {
                 statusSummary = t("status.cli_unavailable", "adguardvpn-cli unavailable");
             }
             parseStatus(stdout, exitCode);
+            maybeAutoConnectOnStartup();
         });
     }
 
@@ -424,6 +498,7 @@ Item {
 
         runCli("config", ["config", "show"], (stdout, exitCode) => {
             parseConfig(stdout, exitCode);
+            maybeAutoConnectOnStartup();
         });
     }
 
@@ -528,7 +603,7 @@ Item {
     }
 
     function maybeAutoConnectOnStartup() {
-        if (startupAutoConnectAttempted || !autoConnectOnStartup || !cliAvailable || commandRunning || isConnected) {
+        if (startupAutoConnectAttempted || !startupAutoConnectEnabled || !autoConnectOnStartup || !startupStatusKnown || !startupConfigKnown || !cliAvailable || commandRunning || isConnected) {
             return;
         }
 
@@ -577,12 +652,20 @@ Item {
             const country = (locationItem.country || "").toString().trim();
             const city = (locationItem.city || "").toString().trim();
 
-            const candidates = [iso, city, country, `${city}, ${country}`, `${country}, ${city}`].filter(Boolean);
-
-            for (let c = 0; c < candidates.length; c++) {
-                if (candidates[c].toLowerCase() === normalizedInput) {
-                    return iso || rawTarget;
-                }
+            if (iso && iso.toLowerCase() === normalizedInput) {
+                return iso;
+            }
+            if (city && city.toLowerCase() === normalizedInput) {
+                return locationTarget(locationItem) || rawTarget;
+            }
+            if (city && country && `${city}, ${country}`.toLowerCase() === normalizedInput) {
+                return locationTarget(locationItem) || rawTarget;
+            }
+            if (city && country && `${country}, ${city}`.toLowerCase() === normalizedInput) {
+                return locationTarget(locationItem) || rawTarget;
+            }
+            if (country && country.toLowerCase() === normalizedInput) {
+                return country;
             }
         }
 
@@ -783,6 +866,8 @@ Item {
     function prepareDisconnectedRuntime(callback) {
         const tunPreflightRequired = (currentMode || "").toString().toLowerCase() !== "socks";
         const prepScript = `
+            CLI_BIN="$1"
+
             resolve_home() {
                 if [ -n "$HOME" ]; then
                     printf '%s' "$HOME"
@@ -814,12 +899,17 @@ Item {
                 exit 0
             fi
 
-            if command -v adguardvpn-cli >/dev/null 2>&1; then
-                adguardvpn-cli disconnect >/dev/null 2>&1 || true
+            if [ -n "$CLI_BIN" ]; then
+                "$CLI_BIN" disconnect >/dev/null 2>&1 || true
                 sleep 1
             fi
 
             if command -v lsof >/dev/null 2>&1 && lsof -nP "$SOCKET_PATH" >/dev/null 2>&1; then
+                printf 'busy'
+                exit 42
+            fi
+
+            if command -v fuser >/dev/null 2>&1 && fuser "$SOCKET_PATH" >/dev/null 2>&1; then
                 printf 'busy'
                 exit 42
             fi
@@ -834,7 +924,7 @@ Item {
             printf 'cleaned'
         `;
 
-        Proc.runCommand(`${pluginId}.prepareRuntime.${Date.now()}`, ["sh", "-lc", prepScript], (stdout, exitCode) => {
+        Proc.runCommand(`${pluginId}.prepareRuntime.${Date.now()}`, ["sh", "-lc", prepScript, "sh", adguardBinary], (stdout, exitCode) => {
             callback(cleanOutput(stdout), exitCode);
         }, 100);
     }
