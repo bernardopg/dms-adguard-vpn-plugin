@@ -1,26 +1,40 @@
-<!-- markdownlint-disable MD033 -->
+<!-- markdownlint-disable MD033 MD041 -->
+<p align="center">
+  <img src="./docs/cover.png" alt="AdGuard VPN — DankMaterialShell Plugin" width="1000" />
+</p>
+
 # 🛡️ AdGuard VPN — DankMaterialShell Plugin
+
+<p align="center">
+  <a href="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml"><img src="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml/badge.svg" alt="Quality CI" /></a>
+  <img src="https://img.shields.io/badge/version-1.4.0-e8924a" alt="Version 1.4.0" />
+  <img src="https://img.shields.io/badge/DankMaterialShell-%E2%89%A5%201.4.0-5a6a8a" alt="DMS >= 1.4.0" />
+  <img src="https://img.shields.io/badge/i18n-22%20locales-3b82f6" alt="22 locales" />
+  <img src="https://img.shields.io/badge/parser%20tests-26%20passing-2ea44f" alt="26 parser tests" />
+  <img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="MIT License" />
+</p>
 
 > Control, monitor, and configure **AdGuard VPN** directly from your DankBar — no terminal needed. **Language / Idioma:** English is the primary documentation language. A Portuguese (Brazil) version is provided below for the same user-facing guidance.
 
 <p align="center">
-  <img src="./docs/screenshot.png" alt="AdGuard VPN plugin screenshot - status and actions" width="1000" />
+  <img src="./docs/screenshot.png" alt="AdGuard VPN plugin popout — connected hero with account, quick actions, and locations list with search, favorites, and one-tap connect" width="1000" />
 </p>
 
 ---
 
 ## ✨ Features
 
-| Category              | What you get                                                                     |
-| --------------------- | -------------------------------------------------------------------------------- |
-| **Live monitoring**   | Real-time status, account info, config, and ranked locations                     |
-| **One-click actions** | Connect / Disconnect / Fastest / Location quick-connect                          |
-| **Runtime config**    | Mode (TUN / SOCKS), Protocol (Auto / HTTP2 / QUIC), Update channel, DNS upstream |
-| **Location tools**    | Search & filter, city/country quick-connect, favorites                           |
-| **Resilience**        | Auto-connect on startup, auto-reconnect on tunnel drop                           |
-| **Diagnostics**       | Last command log, tunnel log viewer, contextual error hints                      |
-| **Multilingual**      | 22 languages with safe fallback (EN, PT-BR + 20 additional locales)              |
-| **Robust parsers**    | ANSI-safe, multi-format CLI output parsing                                       |
+| Category              | What you get                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| **Live monitoring**   | Real-time status, account info, tunnel interface, SOCKS endpoint, and ranked locations    |
+| **One-click actions** | Connect / Disconnect / Fastest / Location quick-connect — Enter in the field connects too |
+| **Runtime config**    | Mode (TUN / SOCKS), Protocol (Auto / HTTP2 / QUIC), Update channel, DNS upstream          |
+| **Location tools**    | Search & filter, city/country quick-connect, favorites pinned on top, "show more" paging  |
+| **Resilience**        | Auto-connect on startup, auto-reconnect with 3-step backoff, connect preflight checks     |
+| **Diagnostics**       | Last command log, tunnel log viewer, login-required banner with copyable command          |
+| **Accessibility**     | Full keyboard navigation (Tab + Enter/Space) with visible focus and Accessible roles      |
+| **Multilingual**      | 22 languages with safe fallback (EN, PT-BR + 20 additional locales)                       |
+| **Tested parsers**    | ANSI-safe, multi-format CLI parsing covered by 26 unit tests in CI                        |
 
 ---
 
@@ -60,19 +74,20 @@ Open **DMS Settings → Widgets** and add **AdGuard VPN** to your bar.
 
 All settings are configurable through the DMS plugin settings screen.
 
-| Setting                | Type   |     Default      | Description                                                                                                                                                                                                            |
-| ---------------------- | ------ | :--------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `adguardBinary`        | string | `adguardvpn-cli` | CLI binary name or absolute path                                                                                                                                                                                       |
-| `refreshIntervalSec`   | int    |       `8`        | Status polling interval (3–120 s)                                                                                                                                                                                      |
-| `locationsCount`       | int    |       `20`       | How many locations to fetch (5–100)                                                                                                                                                                                    |
-| `connectStrategy`      | enum   |    `fastest`     | Default connect behavior: `fastest` or `location`                                                                                                                                                                      |
-| `defaultLocation`      | string |        —         | Preferred location (city, country, or ISO code)                                                                                                                                                                        |
-| `ipStack`              | enum   |      `auto`      | Force `ipv4` or `ipv6` on connect                                                                                                                                                                                      |
-| `autoRefreshLocations` | bool   |      `true`      | Periodically refresh ranked server list                                                                                                                                                                                |
-| `autoConnectOnStartup` | bool   |     `false`      | Auto-connect when plugin / session starts                                                                                                                                                                              |
-| `autoReconnectOnDrop`  | bool   |     `false`      | Auto-reconnect when the tunnel drops unexpectedly                                                                                                                                                                      |
-| `showLocationInBar`    | bool   |      `true`      | Display connection text next to bar icon                                                                                                                                                                               |
-| `languageOverride`     | enum   |      `auto`      | UI language: `auto`, `en_US`, `pt_BR`, `es_ES`, `zh_CN`, `hi_IN`, `ar`, `bn_BD`, `fr_FR`, `de_DE`, `ja_JP`, `ru_RU`, `ko_KR`, `id_ID`, `tr_TR`, `vi_VN`, `it_IT`, `pl_PL`, `nl_NL`, `fa_IR`, `th_TH`, `ur_PK`, `ms_MY` |
+| Setting                 | Type   | Default          | Description                                                                                                                                                                                                            |
+|-------------------------|--------|:----------------:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `adguardBinary`         | string | `adguardvpn-cli` | CLI binary name or absolute path                                                                                                                                                                                       |
+| `refreshIntervalSec`    | int    |       `8`        | Status polling interval (3–120 s)                                                                                                                                                                                      |
+| `locationsCount`        | int    |       `20`       | How many locations to fetch (5–100)                                                                                                                                                                                    |
+| `connectStrategy`       | enum   |    `fastest`     | Default connect behavior: `fastest` or `location`                                                                                                                                                                      |
+| `defaultLocation`       | string |        —         | Preferred location (city, country, or ISO code)                                                                                                                                                                        |
+| `ipStack`               | enum   |      `auto`      | Force `ipv4` or `ipv6` on connect                                                                                                                                                                                      |
+| `autoRefreshLocations`  | bool   |      `true`      | Periodically refresh ranked server list                                                                                                                                                                                |
+| `autoConnectOnStartup`  | bool   |     `false`      | Auto-connect when plugin / session starts                                                                                                                                                                              |
+| `autoReconnectOnDrop`   | bool   |     `false`      | Auto-reconnect when the tunnel drops unexpectedly                                                                                                                                                                      |
+| `showLocationInBar`     | bool   |      `true`      | Display connection text next to bar icon                                                                                                                                                                               |
+| `bypassMultiRouteCheck` | bool   |     `false`      | Skip the pre-connect multi-default-route check (Settings → Advanced) if it false-positives on your setup                                                                                                               |
+| `languageOverride`      | enum   |      `auto`      | UI language: `auto`, `en_US`, `pt_BR`, `es_ES`, `zh_CN`, `hi_IN`, `ar`, `bn_BD`, `fr_FR`, `de_DE`, `ja_JP`, `ru_RU`, `ko_KR`, `id_ID`, `tr_TR`, `vi_VN`, `it_IT`, `pl_PL`, `nl_NL`, `fa_IR`, `th_TH`, `ur_PK`, `ms_MY` |
 
 ---
 
@@ -238,7 +253,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for workflow, quality checks, and relea
 Follow the [Release Checklist](./docs/RELEASE_CHECKLIST.md), then:
 
 ```bash
-git tag v1.3.0
+git tag vX.Y.Z
 git push origin main --tags
 ```
 
@@ -260,14 +275,15 @@ Submit to the [DMS Plugin Registry](https://github.com/AvengeMedia/dms-plugin-re
 
 | Categoria | O que você recebe |
 | --- | --- |
-| **Monitoramento ao vivo** | Status, conta, configuração e localizações ranqueadas em tempo real |
-| **Ações em um clique** | Conectar / Desconectar / Mais rápida / Conectar por localização |
+| **Monitoramento ao vivo** | Status, conta, interface do túnel, endpoint SOCKS e localizações ranqueadas em tempo real |
+| **Ações em um clique** | Conectar / Desconectar / Mais rápida / Conectar por localização — Enter no campo também conecta |
 | **Configuração em runtime** | Modo (TUN / SOCKS), Protocolo (Auto / HTTP2 / QUIC), canal de atualização e DNS upstream |
-| **Ferramentas de localização** | Busca, filtro, favoritos e conexão por cidade/país |
-| **Resiliência** | Auto-conectar ao iniciar e auto-reconectar em queda do túnel |
-| **Diagnóstico** | Último comando, visualizador do log do túnel e dicas contextuais de erro |
+| **Ferramentas de localização** | Busca, filtro, favoritos fixados no topo e paginação "mostrar mais" |
+| **Resiliência** | Auto-conectar ao iniciar, auto-reconectar com backoff em 3 etapas e preflight de conexão |
+| **Diagnóstico** | Último comando, visualizador do log do túnel e banner de login com comando copiável |
+| **Acessibilidade** | Navegação completa por teclado (Tab + Enter/Espaço) com foco visível e roles Accessible |
 | **Multilíngue** | 22 idiomas com fallback seguro (EN, PT-BR + 20 locales adicionais) |
-| **Parsers robustos** | Remoção de ANSI e parsing de múltiplos formatos de saída do CLI |
+| **Parsers testados** | Remoção de ANSI e parsing multi-formato cobertos por 26 testes unitários no CI |
 
 ### Requisitos
 
@@ -305,6 +321,7 @@ Todas as configurações ficam na tela de settings do plugin no DMS.
 | `autoConnectOnStartup` | bool | `false` | Conectar automaticamente ao iniciar plugin/sessão |
 | `autoReconnectOnDrop` | bool | `false` | Reconectar se o túnel cair inesperadamente |
 | `showLocationInBar` | bool | `true` | Mostrar texto/localização ao lado do ícone |
+| `bypassMultiRouteCheck` | bool | `false` | Pular a checagem de múltiplas rotas padrão antes de conectar (Configurações → Avançado) em setups com falso positivo |
 | `languageOverride` | enum | `auto` | Idioma da UI; `auto` segue o locale do sistema |
 
 ### Segurança e permissões

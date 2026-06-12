@@ -50,8 +50,9 @@
 
 ## P3 — Documentação
 
-- [ ] **README: tabela de settings desatualizada (EN e PT-BR)** — falta `bypassMultiRouteCheck` (bool, default `false`, Settings → Advanced) nas duas tabelas. É a única setting nova da v1.3.3 e não está documentada no README.
-- [ ] **README: exemplo de publish com tag velha** — seção Publishing usa `git tag v1.3.0`; trocar por placeholder `vX.Y.Z`.
+- [x] **README: tabela de settings desatualizada (EN e PT-BR)** — ✅ 2026-06-12: `bypassMultiRouteCheck` documentada nas duas tabelas.
+- [x] **README: exemplo de publish com tag velha** — ✅ 2026-06-12: placeholder `vX.Y.Z`.
+- [x] **README vendável** — ✅ 2026-06-12: capa nova (`docs/cover.png`, SVG autoral renderizado, tema navy+âmbar da UI), badges (CI, versão, DMS, i18n, testes, licença), `docs/screenshot.png` refeito com capturas reais do popout v-atual (2 painéis compostos com sombra/fundo on-brand), tabelas de features EN/PT atualizadas com acessibilidade, retry e testes.
 - [ ] **ARCHITECTURE.md: "four layers" vs tabela com 5 linhas** — o texto diz quatro camadas, a tabela lista UI/Settings/Service/Localization/Parsers (5). Alinhar (UI+Settings = camada de apresentação, ou assumir 5).
 - [ ] **CHANGELOG: adicionar links de comparação** — Keep a Changelog recomenda `[1.3.4]: https://github.com/.../compare/v1.3.3...v1.3.4` no rodapé.
 - [ ] **Documentar cap de exibição da lista de localizações** (ou remover o cap — ver P1) e o comportamento de retry único do auto-reconnect enquanto não evoluir.

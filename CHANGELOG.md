@@ -9,6 +9,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+---
+
+## [1.4.0] - 2026-06-12
+
 ### Added
 
 - "Show more" button in the locations list: the previous hard cap of 8 visible entries now expands progressively (+12 per click) and the "Showing X/Y" counter reports what is actually rendered.
@@ -22,6 +26,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ### Changed
 
+- README refreshed for registry listing: new cover banner (`docs/cover.png`), CI/version/i18n/tests badges, updated feature matrix, documented `bypassMultiRouteCheck`, and a new `docs/screenshot.png` composed from real captures of the current popout.
 - Status polling backs off to at least 30 s while the CLI is unavailable, instead of spawning a failing process on every tick; the configured interval is restored as soon as the CLI responds again.
 - Switching the plugin language now refreshes imperative state strings (status summary) immediately instead of waiting for the next poll.
 - Legacy `favoriteLocationIsos` favorites are persisted to the new `favoriteLocationTargets` key on first load.
@@ -40,6 +45,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 - Timestamps now follow the plugin language override instead of the system locale.
 - Debug lines (`DBG:`) from the tunnel-log opener no longer leak into the hero error text (kept separately in `lastErrorDebug`).
 - Bar text no longer reserves a fixed 140 px when showing short status like "Off".
+
+> **Full notes ->** [docs/releases/v1.4.0.md](./docs/releases/v1.4.0.md)
 
 ---
 
@@ -209,6 +216,8 @@ Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês ac
 
 ### [Não lançado]
 
+### [1.4.0] - 2026-06-12
+
 #### Adicionado
 
 - Botão "Mostrar mais" na lista de localizações: o limite fixo de 8 entradas agora expande progressivamente (+12 por clique) e o contador "Mostrando X/Y" reflete o que está renderizado de fato.
@@ -222,6 +231,7 @@ Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês ac
 
 #### Alterado
 
+- README renovado para o registry: nova capa (`docs/cover.png`), badges de CI/versão/i18n/testes, matriz de recursos atualizada, `bypassMultiRouteCheck` documentada e novo `docs/screenshot.png` composto com capturas reais do popout atual.
 - Polling de status recua para no mínimo 30 s enquanto o CLI está indisponível, em vez de criar um processo com falha a cada ciclo; o intervalo configurado volta assim que o CLI responde.
 - Trocar o idioma do plugin agora atualiza imediatamente as strings de estado imperativas (resumo de status), sem esperar o próximo poll.
 - Favoritos legados em `favoriteLocationIsos` são persistidos na chave nova `favoriteLocationTargets` no primeiro carregamento.
