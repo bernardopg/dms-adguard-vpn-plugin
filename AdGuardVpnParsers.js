@@ -236,10 +236,10 @@ function parseLocationLine(line) {
             return null;
         }
 
-        const iso = columns[0].toUpperCase();
-        if (!/^[A-Z]{2}$/.test(iso)) {
+        if (!/^[A-Z]{2}$/.test(columns[0])) {
             return null;
         }
+        const iso = columns[0];
 
         const country = columns[1];
         const city = columns[2];
@@ -276,9 +276,9 @@ function parseLocationLine(line) {
         return byCsv;
     }
 
-    const dashedMatch = compact.match(/^([A-Z]{2})\s+(.+?)\s*[-–—]\s*(.+?)(?:\s+(\d+)\s*ms?)?$/i);
+    const dashedMatch = compact.match(/^([A-Z]{2})\s+(.+?)\s*[-–—]\s*(.+?)(?:\s+(\d+)\s*[mM][sS]?)?$/);
     if (dashedMatch) {
-        const iso = dashedMatch[1].toUpperCase();
+        const iso = dashedMatch[1];
         const country = dashedMatch[2].trim();
         const city = dashedMatch[3].trim();
         const pingValue = dashedMatch[4] ? parseInt(dashedMatch[4], 10) : -1;
@@ -297,9 +297,9 @@ function parseLocationLine(line) {
         .replace(/\s+/g, " ")
         .trim();
 
-    const bracketIsoMatch = normalized.match(/\(([A-Z]{2})\)/i);
-    const plainIsoMatch = normalized.match(/\b([A-Z]{2})\b/i);
-    const iso = (bracketIsoMatch ? bracketIsoMatch[1] : (plainIsoMatch ? plainIsoMatch[1] : "")).toUpperCase();
+    const bracketIsoMatch = normalized.match(/\(([A-Z]{2})\)/);
+    const plainIsoMatch = normalized.match(/\b([A-Z]{2})\b/);
+    const iso = bracketIsoMatch ? bracketIsoMatch[1] : (plainIsoMatch ? plainIsoMatch[1] : "");
     if (!/^[A-Z]{2}$/.test(iso)) {
         return null;
     }

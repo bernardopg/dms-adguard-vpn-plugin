@@ -42,6 +42,9 @@ Item {
     property bool startupStatusKnown: false
     property bool startupConfigKnown: false
     property bool suppressReconnectOnce: false
+    property bool reconnectPending: false
+    property int reconnectAttempts: 0
+    readonly property var reconnectDelaysMs: [5000, 15000, 45000]
 
     property bool cliAvailable: false
     property string cliVersion: ""
@@ -58,6 +61,7 @@ Item {
     property string accountTier: ""
     property int maxDevices: 0
     property string subscriptionRenewDate: ""
+    property bool loginRequired: false
 
     property string currentMode: ""
     property string currentProtocol: "auto"
@@ -73,6 +77,7 @@ Item {
 
     property var locations: []
     property string lastError: ""
+    property string lastErrorDebug: ""
     property string lastStatusRaw: ""
     property string lastConfigRaw: ""
     property string lastLicenseRaw: ""
@@ -192,6 +197,11 @@ Item {
             return stored !== undefined ? stored : defaultValue;
         };
 
+        const firstLoad = !initialSettingsLoaded;
+        const previousBinary = adguardBinary;
+        const previousRefreshIntervalSec = refreshIntervalSec;
+        const previousAutoRefreshLocations = autoRefreshLocations;
+
         adguardBinary = (load("adguardBinary", defaults.adguardBinary) || defaults.adguardBinary).toString().trim();
         refreshIntervalSec = asInt(load("refreshIntervalSec", defaults.refreshIntervalSec), defaults.refreshIntervalSec, 3, 120);
         locationsCount = asInt(load("locationsCount", defaults.locationsCount), defaults.locationsCount, 5, 100);
@@ -205,6 +215,9 @@ Item {
         const legacyFavoriteIsos = PluginService.loadPluginData(pluginId, "favoriteLocationIsos");
         const favoriteSource = storedFavoriteTargets !== undefined && storedFavoriteTargets !== null ? storedFavoriteTargets : (legacyFavoriteIsos !== undefined && legacyFavoriteIsos !== null ? legacyFavoriteIsos : defaults.favoriteLocationTargets);
         favoriteLocationTargets = normalizeFavoriteLocationTargets(favoriteSource);
+        if ((storedFavoriteTargets === undefined || storedFavoriteTargets === null) && legacyFavoriteIsos !== undefined && legacyFavoriteIsos !== null) {
+            saveSetting("favoriteLocationTargets", favoriteLocationTargets);
+        }
         bypassMultiRouteCheck = asBool(load("bypassMultiRouteCheck", defaults.bypassMultiRouteCheck), defaults.bypassMultiRouteCheck);
 
         if (!initialSettingsLoaded) {
@@ -212,8 +225,12 @@ Item {
             initialSettingsLoaded = true;
         }
 
-        restartTimers();
-        checkCliAvailability();
+        if (firstLoad || refreshIntervalSec !== previousRefreshIntervalSec || autoRefreshLocations !== previousAutoRefreshLocations) {
+            restartTimers();
+        }
+        if (firstLoad || adguardBinary !== previousBinary) {
+            checkCliAvailability();
+        }
     }
 
     function saveSetting(key, value) {
@@ -268,8 +285,19 @@ Item {
         saveSetting("favoriteLocationTargets", favoriteLocationTargets);
     }
 
+    // Back off the status poll while the CLI is missing: the recovery probe
+    // still runs, but at >=30 s instead of spawning a failing process every tick.
+    function statusPollIntervalMs() {
+        const seconds = cliAvailable ? refreshIntervalSec : Math.max(refreshIntervalSec, 30);
+        return seconds * 1000;
+    }
+
+    onCliAvailableChanged: {
+        statusTimer.interval = statusPollIntervalMs();
+    }
+
     function restartTimers() {
-        statusTimer.interval = refreshIntervalSec * 1000;
+        statusTimer.interval = statusPollIntervalMs();
         metadataTimer.interval = Math.max(15, refreshIntervalSec * 3) * 1000;
         locationsTimer.interval = Math.max(30, refreshIntervalSec * 6) * 1000;
 
@@ -285,14 +313,16 @@ Item {
         }
     }
 
-    function runCli(operation, args, callback, timeoutTicks) {
+    // Proc.runCommand signature: (id, command, callback, debounceMs, timeoutMs).
+    // Command ids are unique per call, so debounce is useless here — always 0.
+    function runCli(operation, args, callback, timeoutMs) {
         const commandId = `${pluginId}.${operation}.${Date.now()}`;
         const command = [adguardBinary].concat(args || []);
-        const timeoutValue = timeoutTicks !== undefined && timeoutTicks !== null ? timeoutTicks : 100;
+        const timeoutValue = timeoutMs !== undefined && timeoutMs !== null ? timeoutMs : 15000;
 
         Proc.runCommand(commandId, command, (stdout, exitCode) => {
             callback(stdout || "", exitCode);
-        }, timeoutValue);
+        }, 0, timeoutValue);
     }
 
     function checkCliAvailability() {
@@ -394,6 +424,7 @@ Item {
             accountTier = "";
             maxDevices = 0;
             subscriptionRenewDate = "";
+            loginRequired = true;
             return;
         }
 
@@ -404,6 +435,7 @@ Item {
         const parsed = AdGuardVpnParsers.parseLicenseOutput(clean);
         if (parsed.accountEmail) {
             accountEmail = parsed.accountEmail;
+            loginRequired = false;
         }
         if (parsed.accountTier) {
             accountTier = parsed.accountTier;
@@ -522,7 +554,7 @@ Item {
             parseLicense(stdout, exitCode);
             licenseRefreshInFlight = false;
             licenseRefreshStartedAtMs = 0;
-        }, 300);
+        }, 30000);
     }
 
     function refreshLocations() {
@@ -615,19 +647,41 @@ Item {
         if (nowConnected) {
             reconnectTimer.stop();
             suppressReconnectOnce = false;
+            reconnectPending = false;
+            reconnectAttempts = 0;
             return;
         }
 
         if (suppressReconnectOnce) {
             suppressReconnectOnce = false;
+            reconnectPending = false;
+            reconnectAttempts = 0;
             return;
         }
 
-        if (!autoReconnectOnDrop || !wasConnected || !cliAvailable || commandRunning || reconnectTimer.running) {
+        if (!autoReconnectOnDrop || !cliAvailable || commandRunning || reconnectTimer.running) {
             return;
         }
 
-        ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.reconnect_scheduled", "Connection dropped. Reconnecting..."));
+        if (wasConnected) {
+            reconnectPending = true;
+            reconnectAttempts = 0;
+            ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.reconnect_scheduled", "Connection dropped. Reconnecting..."));
+        }
+
+        if (!reconnectPending) {
+            return;
+        }
+
+        if (reconnectAttempts >= reconnectDelaysMs.length) {
+            reconnectPending = false;
+            ToastService.showError(t("app.title", "AdGuard VPN"), t("toast.reconnect_giveup", "Auto-reconnect gave up after {count} attempts", {
+                count: reconnectDelaysMs.length
+            }));
+            return;
+        }
+
+        reconnectTimer.interval = reconnectDelaysMs[reconnectAttempts];
         reconnectTimer.start();
     }
 
@@ -635,7 +689,8 @@ Item {
         const args = buildArgs(["connect", "-f"], true);
 
         runAction("connectFastest", args, t("app.title", "AdGuard VPN"), t("toast.fastest_selected", "Fastest location selected"), {
-            prepareDisconnectedRuntime: true
+            prepareDisconnectedRuntime: true,
+            timeoutMs: 60000
         });
     }
 
@@ -686,13 +741,16 @@ Item {
         runAction("connectLocation", args, t("app.title", "AdGuard VPN"), t("toast.connecting_to", "Connecting to {location}", {
             location: rawTarget
         }), {
-            prepareDisconnectedRuntime: true
+            prepareDisconnectedRuntime: true,
+            timeoutMs: 60000
         });
     }
 
     function disconnect() {
         suppressReconnectOnce = true;
-        runAction("disconnect", ["disconnect"], t("app.title", "AdGuard VPN"), t("toast.disconnect_requested", "Disconnect requested"));
+        runAction("disconnect", ["disconnect"], t("app.title", "AdGuard VPN"), t("toast.disconnect_requested", "Disconnect requested"), {
+            timeoutMs: 30000
+        });
     }
 
     function toggleConnection() {
@@ -771,16 +829,26 @@ Item {
 
             LOG_CMD='printf "AdGuard VPN log: %s\\nCtrl+C para sair.\\n\\n" "$1"; tail -n 200 -f "$1"'
 
+            # Terminals block until their window closes. Launch in background and
+            # treat "still alive shortly after spawn" as success, so the plugin's
+            # command timeout never kills an open log window.
+            launch_bg() {
+                "$@" >/dev/null 2>&1 &
+                _BG_PID=$!
+                sleep 0.3
+                kill -0 "$_BG_PID" 2>/dev/null
+            }
+
             if command -v kitty >/dev/null 2>&1; then
                 if [ -n "$KITTY_LISTEN_ON" ]; then
                     kitty @ launch --type=window --title "AdGuard VPN Log" sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
                 fi
-                kitty --title "AdGuard VPN Log" sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
-                printf 'DBG:kitty_failed rc=%s display=%s wayland=%s listen=%s\\n' "$?" "\${DISPLAY:-}" "\${WAYLAND_DISPLAY:-}" "\${KITTY_LISTEN_ON:-}"
+                launch_bg kitty --title "AdGuard VPN Log" sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
+                printf 'DBG:kitty_failed display=%s wayland=%s listen=%s\\n' "\${DISPLAY:-}" "\${WAYLAND_DISPLAY:-}" "\${KITTY_LISTEN_ON:-}"
             fi
 
             if command -v x-terminal-emulator >/dev/null 2>&1; then
-                x-terminal-emulator -e sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                launch_bg x-terminal-emulator -e sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
             fi
 
             if command -v gnome-terminal >/dev/null 2>&1; then
@@ -788,31 +856,31 @@ Item {
             fi
 
             if command -v konsole >/dev/null 2>&1; then
-                konsole -e sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                launch_bg konsole -e sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
             fi
 
             if command -v alacritty >/dev/null 2>&1; then
-                alacritty -e sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                launch_bg alacritty -e sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
             fi
 
             if command -v wezterm >/dev/null 2>&1; then
-                wezterm start -- sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                launch_bg wezterm start -- sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
             fi
 
             if command -v xfce4-terminal >/dev/null 2>&1; then
-                xfce4-terminal --hold -e "sh -lc '$LOG_CMD' sh '$TARGET'" >/dev/null 2>&1 && exit 0
+                launch_bg xfce4-terminal --hold -e "sh -lc '$LOG_CMD' sh '$TARGET'" && exit 0
             fi
 
             if command -v mate-terminal >/dev/null 2>&1; then
-                mate-terminal -- sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                launch_bg mate-terminal -- sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
             fi
 
             if command -v lxterminal >/dev/null 2>&1; then
-                lxterminal -e "sh -lc '$LOG_CMD' sh '$TARGET'" >/dev/null 2>&1 && exit 0
+                launch_bg lxterminal -e "sh -lc '$LOG_CMD' sh '$TARGET'" && exit 0
             fi
 
             if command -v terminator >/dev/null 2>&1; then
-                terminator -x sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                launch_bg terminator -x sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
             fi
 
             if command -v xdg-open >/dev/null 2>&1; then
@@ -850,9 +918,7 @@ Item {
                     path: resolvedPath
                 }) : t("toast.log_open_failed", "Failed to open tunnel log"));
 
-            if (debugLine) {
-                lastError = `${lastError}\n${debugLine}`;
-            }
+            lastErrorDebug = debugLine;
 
             ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
             if (openUnsupported) {
@@ -860,7 +926,25 @@ Item {
                     cmd: manualCommand
                 }));
             }
-        }, 100);
+        }, 0, 15000);
+    }
+
+    function copyToClipboard(text) {
+        const value = (text || "").toString();
+        if (!value) {
+            return;
+        }
+
+        const copyScript = 'printf %s "$1" | wl-copy 2>/dev/null || printf %s "$1" | xclip -selection clipboard 2>/dev/null';
+        Proc.runCommand(`${pluginId}.copy.${Date.now()}`, ["sh", "-c", copyScript, "sh", value], (stdout, exitCode) => {
+            if (exitCode === 0) {
+                ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.copied", "Copied: {text}", {
+                    text: value
+                }));
+            } else {
+                ToastService.showError(t("app.title", "AdGuard VPN"), t("toast.copy_failed", "Could not copy to clipboard"));
+            }
+        }, 0, 5000);
     }
 
     function prepareDisconnectedRuntime(callback) {
@@ -926,7 +1010,7 @@ Item {
 
         Proc.runCommand(`${pluginId}.prepareRuntime.${Date.now()}`, ["sh", "-lc", prepScript, "sh", adguardBinary], (stdout, exitCode) => {
             callback(cleanOutput(stdout), exitCode);
-        }, 100);
+        }, 0, 15000);
     }
 
     function runAction(operation, args, toastTitle, toastMessage, options) {
@@ -943,6 +1027,7 @@ Item {
         commandRunning = true;
         runningCommand = operation;
         lastError = "";
+        lastErrorDebug = "";
         suspendPolling();
 
         const executeAction = () => {
@@ -969,17 +1054,23 @@ Item {
                     return;
                 }
 
-                lastError = clean || t("toast.operation_failed", "{operation} failed (code {code})", {
-                    operation: operation,
-                    code: exitCode
-                });
+                if (exitCode === 124) {
+                    lastError = t("toast.command_timeout", "{operation} timed out. The CLI did not answer in time.", {
+                        operation: operation
+                    });
+                } else {
+                    lastError = clean || t("toast.operation_failed", "{operation} failed (code {code})", {
+                        operation: operation,
+                        code: exitCode
+                    });
+                }
                 const hint = buildLocationHelpHint(lastError);
                 if (hint) {
                     lastError = `${lastError}\n${hint}`;
                 }
                 ToastService.showError(t("app.title", "AdGuard VPN"), lastError);
                 refreshStatus();
-            });
+            }, options && options.timeoutMs ? options.timeoutMs : undefined);
         };
 
         if (options && options.prepareDisconnectedRuntime) {
@@ -1038,7 +1129,11 @@ Item {
         repeat: false
         onTriggered: {
             if (!root.isConnected && root.autoReconnectOnDrop && root.cliAvailable && !root.commandRunning) {
+                root.reconnectAttempts += 1;
                 root.connectWithStrategy();
+            } else if (root.isConnected) {
+                root.reconnectPending = false;
+                root.reconnectAttempts = 0;
             }
         }
     }
@@ -1048,6 +1143,19 @@ Item {
         function onPluginDataChanged(changedPluginId) {
             if (changedPluginId === root.pluginId) {
                 loadSettings();
+            }
+        }
+    }
+
+    Connections {
+        target: AdGuardVpnI18n
+        // State strings (statusSummary etc.) are assigned imperatively, so a
+        // language switch only shows up after the next poll. Force one now.
+        function onNormalizedLocaleChanged() {
+            if (root.cliAvailable) {
+                root.refreshStatus();
+            } else {
+                root.statusSummary = root.t("status.cli_unavailable", "adguardvpn-cli unavailable");
             }
         }
     }

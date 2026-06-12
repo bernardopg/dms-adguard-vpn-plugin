@@ -9,6 +9,38 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+### Added
+
+- "Show more" button in the locations list: the previous hard cap of 8 visible entries now expands progressively (+12 per click) and the "Showing X/Y" counter reports what is actually rendered.
+- Auto-reconnect now retries up to 3 times with 5 s / 15 s / 45 s backoff and reports when it gives up, instead of a single silent attempt.
+- "Not logged in" banner in the popout with the exact `adguardvpn-cli login` command and a copy-to-clipboard button (`wl-copy`/`xclip`).
+- Keyboard accessibility: action buttons, location cards, and favorite stars are now Tab-focusable, respond to Enter/Space, expose `Accessible` roles/names, and show a focus border.
+- Hero chips for the active tunnel interface (TUN) and the SOCKS proxy endpoint (`host:port`) when in SOCKS mode.
+- Pressing Enter in the "Direct destination" field connects to the typed location; Enter in the DNS field applies the upstream.
+- Parser unit tests (`scripts/test-parsers.mjs`, 26 cases, zero dependencies) covering status/license/config/locations formats and ISO-code regressions, wired into CI.
+- Popout scrolling now uses the shell's `DankFlickable` (smooth touchpad momentum, auto-hiding overlay scrollbar) with a reserved right-hand channel so the scrollbar never covers content.
+
+### Changed
+
+- Status polling backs off to at least 30 s while the CLI is unavailable, instead of spawning a failing process on every tick; the configured interval is restored as soon as the CLI responds again.
+- Switching the plugin language now refreshes imperative state strings (status summary) immediately instead of waiting for the next poll.
+- Legacy `favoriteLocationIsos` favorites are persisted to the new `favoriteLocationTargets` key on first load.
+
+### Fixed
+
+- Location input no longer gets wiped while typing: unrelated plugin-data saves (e.g. toggling a favorite) used to reset the "Direct destination" field to the saved default location.
+- Saving any setting no longer restarts timers and re-runs the full CLI refresh cascade; timers restart only when `refreshIntervalSec`/`autoRefreshLocations` change and CLI availability is rechecked only when `adguardBinary` changes.
+- Command timeouts now work as intended: the value previously passed to `Proc.runCommand` was the debounce delay, not the timeout, so every command was capped at the 10 s default. Connects now get 60 s, `disconnect`/`license` 30 s, reads 15 s, and timeouts (exit 124) surface a dedicated error message.
+- Opening the tunnel log no longer reports a false failure after 10 s: blocking terminal emulators are launched in the background and considered successful when still alive shortly after spawn.
+- Location parser fallback no longer treats lowercase two-letter words ("to", "in", "of") as ISO country codes.
+- Removed the duplicate full refresh burst on startup (Service and Widget both triggered `refreshAll`).
+- Locations search and direct-destination fields rendered collapsed/invisible because of `Layout.fillWidth` attached properties inside plain `Column` positioners; both now use full-width stacked `DankTextField`s (verified via screenshots).
+- The direct-destination field no longer starts empty when a default location is saved: it now seeds from a reactive `pluginData` binding on every popout open instead of a one-shot copy that raced plugin-data loading.
+- "Auto" protocol button no longer truncates ("Autom...") in pt-BR.
+- Timestamps now follow the plugin language override instead of the system locale.
+- Debug lines (`DBG:`) from the tunnel-log opener no longer leak into the hero error text (kept separately in `lastErrorDebug`).
+- Bar text no longer reserves a fixed 140 px when showing short status like "Off".
+
 ---
 
 ## [1.3.4] - 2026-05-28
@@ -176,6 +208,38 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês acima é a fonte primária; esta seção fornece a tradução PT-BR.
 
 ### [Não lançado]
+
+#### Adicionado
+
+- Botão "Mostrar mais" na lista de localizações: o limite fixo de 8 entradas agora expande progressivamente (+12 por clique) e o contador "Mostrando X/Y" reflete o que está renderizado de fato.
+- Reconexão automática agora tenta até 3 vezes com backoff de 5 s / 15 s / 45 s e avisa quando desiste, em vez de uma única tentativa silenciosa.
+- Banner "Sessão não iniciada" no popout com o comando exato `adguardvpn-cli login` e botão de copiar (`wl-copy`/`xclip`).
+- Acessibilidade de teclado: botões de ação, cards de localização e estrelas de favorito agora recebem foco por Tab, respondem a Enter/Espaço, expõem roles/nomes `Accessible` e mostram borda de foco.
+- Chips no hero para a interface de túnel ativa (TUN) e o endpoint do proxy SOCKS (`host:porta`) no modo SOCKS.
+- Pressionar Enter no campo "Destino direto" conecta à localização digitada; Enter no campo DNS aplica o upstream.
+- Testes unitários dos parsers (`scripts/test-parsers.mjs`, 26 casos, zero dependências) cobrindo formatos de status/license/config/locations e regressões de código ISO, integrados ao CI.
+- Scroll do popout agora usa o `DankFlickable` do shell (momentum suave de touchpad, scrollbar overlay com auto-hide) com canal reservado à direita para a scrollbar nunca cobrir o conteúdo.
+
+#### Alterado
+
+- Polling de status recua para no mínimo 30 s enquanto o CLI está indisponível, em vez de criar um processo com falha a cada ciclo; o intervalo configurado volta assim que o CLI responde.
+- Trocar o idioma do plugin agora atualiza imediatamente as strings de estado imperativas (resumo de status), sem esperar o próximo poll.
+- Favoritos legados em `favoriteLocationIsos` são persistidos na chave nova `favoriteLocationTargets` no primeiro carregamento.
+
+#### Corrigido
+
+- Campo de localização não é mais apagado durante a digitação: saves não relacionados (ex.: favoritar) resetavam o campo "Destino direto" para a localização padrão salva.
+- Salvar qualquer setting não reinicia mais os timers nem refaz a cascata completa de refresh do CLI; timers reiniciam apenas quando `refreshIntervalSec`/`autoRefreshLocations` mudam e a disponibilidade do CLI só é reverificada quando `adguardBinary` muda.
+- Timeouts de comando agora funcionam de verdade: o valor passado ao `Proc.runCommand` era o debounce, não o timeout — todo comando ficava limitado aos 10 s padrão. Connects agora têm 60 s, `disconnect`/`license` 30 s, leituras 15 s, e timeout (exit 124) exibe mensagem dedicada.
+- Abrir o log do túnel não reporta mais falha falsa após 10 s: terminais blocking são lançados em background e considerados sucesso se continuarem vivos logo após o spawn.
+- Fallback do parser de localizações não trata mais palavras minúsculas de duas letras ("to", "in", "of") como códigos ISO de país.
+- Removido o burst duplicado de refresh completo no startup (Service e Widget disparavam `refreshAll`).
+- Campos de busca e destino direto renderizavam colapsados/invisíveis por causa de attached properties `Layout.fillWidth` dentro de `Column` puro; ambos agora são `DankTextField`s empilhados em largura total (verificado por screenshots).
+- O campo de destino direto não inicia mais vazio quando há localização padrão salva: o seed agora vem de um binding reativo a `pluginData` a cada abertura do popout, em vez de uma cópia única que corria contra o carregamento dos dados.
+- Botão de protocolo "Auto" não trunca mais ("Autom...") em pt-BR.
+- Timestamps agora seguem o idioma configurado no plugin em vez do locale do sistema.
+- Linhas de debug (`DBG:`) do abridor de log não vazam mais para o texto de erro do hero (mantidas em `lastErrorDebug`).
+- Texto da barra não reserva mais 140 px fixos ao exibir status curto como "Off".
 
 ### [1.3.4] - 2026-05-28
 

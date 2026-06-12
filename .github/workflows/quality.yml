@@ -44,5 +44,8 @@ jobs:
       - name: Check i18n keys / Validar chaves i18n
         run: node scripts/check-i18n-keys.mjs
 
+      - name: Run parser tests / Rodar testes dos parsers
+        run: node scripts/test-parsers.mjs
+
       - name: Validate QML syntax / Validar sintaxe QML
         run: bash scripts/validate-qml.sh

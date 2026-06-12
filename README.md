@@ -113,6 +113,7 @@ adguardVPplugin/
 │   └── README.md               # Translation guide
 ├── scripts/
 │   ├── check-i18n-keys.mjs     # i18n key parity checker
+│   ├── test-parsers.mjs        # Parser unit tests (status/license/config/locations)
 │   ├── lint-markdown.sh        # Markdown linter
 │   └── validate-qml.sh         # QML syntax validator
 ├── docs/
@@ -206,6 +207,7 @@ Quality checks before committing:
 
 ```bash
 node scripts/check-i18n-keys.mjs   # i18n key parity
+node scripts/test-parsers.mjs      # parser unit tests
 bash scripts/lint-markdown.sh       # markdown lint
 bash scripts/validate-qml.sh       # QML syntax
 ```
@@ -337,6 +339,7 @@ Checks antes de commitar:
 
 ```bash
 node scripts/check-i18n-keys.mjs
+node scripts/test-parsers.mjs
 bash scripts/lint-markdown.sh
 bash scripts/validate-qml.sh
 ```
