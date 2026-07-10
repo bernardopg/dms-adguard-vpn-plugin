@@ -7,10 +7,10 @@
 
 <p align="center">
   <a href="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml"><img src="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml/badge.svg" alt="Quality CI" /></a>
-  <img src="https://img.shields.io/badge/version-1.4.0-e8924a" alt="Version 1.4.0" />
+  <img src="https://img.shields.io/badge/version-1.5.0-e8924a" alt="Version 1.5.0" />
   <img src="https://img.shields.io/badge/DankMaterialShell-%E2%89%A5%201.4.0-5a6a8a" alt="DMS >= 1.4.0" />
   <img src="https://img.shields.io/badge/i18n-22%20locales-3b82f6" alt="22 locales" />
-  <img src="https://img.shields.io/badge/parser%20tests-26%20passing-2ea44f" alt="26 parser tests" />
+  <img src="https://img.shields.io/badge/parser%20tests-29%20passing-2ea44f" alt="29 parser tests" />
   <img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="MIT License" />
 </p>
 
@@ -34,7 +34,7 @@
 | **Diagnostics**       | Last command log, tunnel log viewer, login-required banner with copyable command          |
 | **Accessibility**     | Full keyboard navigation (Tab + Enter/Space) with visible focus and Accessible roles      |
 | **Multilingual**      | 22 languages with safe fallback (EN, PT-BR + 20 additional locales)                       |
-| **Tested parsers**    | ANSI-safe, multi-format CLI parsing covered by 26 unit tests in CI                        |
+| **Tested parsers**    | ANSI-safe, multi-format CLI parsing covered by 29 unit tests in CI                        |
 
 ---
 
@@ -96,6 +96,7 @@ All settings are configurable through the DMS plugin settings screen.
 | `autoReconnectOnDrop`   | bool   |     `false`      | Auto-reconnect when the tunnel drops unexpectedly                                                                                                                                                                      |
 | `showLocationInBar`     | bool   |      `true`      | Display connection text next to bar icon                                                                                                                                                                               |
 | `bypassMultiRouteCheck` | bool   |     `false`      | Skip the pre-connect multi-default-route check (Settings → Advanced) if it false-positives on your setup                                                                                                               |
+| `useSystemdService`     | bool   |     `false`      | Delegate connect/disconnect to the optional, separately installed `adguardvpn-dms-control` systemd helper                                                                                                              |
 | `languageOverride`      | enum   |      `auto`      | UI language: `auto`, `en_US`, `pt_BR`, `es_ES`, `zh_CN`, `hi_IN`, `ar`, `bn_BD`, `fr_FR`, `de_DE`, `ja_JP`, `ru_RU`, `ko_KR`, `id_ID`, `tr_TR`, `vi_VN`, `it_IT`, `pl_PL`, `nl_NL`, `fa_IR`, `th_TH`, `ur_PK`, `ms_MY` |
 
 ---
@@ -247,6 +248,8 @@ This plugin is now officially **multilang** and ships with:
   Español, 中文 (简体), हिन्दी, العربية, বাংলা, Français, Deutsch, 日本語, Русский, 한국어,
   Indonesia, Türkçe, Tiếng Việt, Italiano, Polski, Nederlands, فارسی, ไทย, اردو, Bahasa Melayu
 
+Safety-critical DNS leak warnings are translated in every shipped locale; untranslated optional strings fall back to English.
+
 Adding or extending locales is straightforward — see [i18n/README.md](./i18n/README.md).
 
 ---
@@ -292,7 +295,7 @@ Submit to the [DMS Plugin Registry](https://github.com/AvengeMedia/dms-plugin-re
 | **Diagnóstico** | Último comando, visualizador do log do túnel e banner de login com comando copiável |
 | **Acessibilidade** | Navegação completa por teclado (Tab + Enter/Espaço) com foco visível e roles Accessible |
 | **Multilíngue** | 22 idiomas com fallback seguro (EN, PT-BR + 20 locales adicionais) |
-| **Parsers testados** | Remoção de ANSI e parsing multi-formato cobertos por 26 testes unitários no CI |
+| **Parsers testados** | Remoção de ANSI e parsing multi-formato cobertos por 29 testes unitários no CI |
 
 ### Requisitos
 
@@ -331,6 +334,7 @@ Todas as configurações ficam na tela de settings do plugin no DMS.
 | `autoReconnectOnDrop` | bool | `false` | Reconectar se o túnel cair inesperadamente |
 | `showLocationInBar` | bool | `true` | Mostrar texto/localização ao lado do ícone |
 | `bypassMultiRouteCheck` | bool | `false` | Pular a checagem de múltiplas rotas padrão antes de conectar (Configurações → Avançado) em setups com falso positivo |
+| `useSystemdService` | bool | `false` | Delegar conexão/desconexão ao helper systemd opcional `adguardvpn-dms-control`, instalado separadamente |
 | `languageOverride` | enum | `auto` | Idioma da UI; `auto` segue o locale do sistema |
 
 ### Segurança e permissões

@@ -571,12 +571,11 @@ PluginComponent {
 
     popoutWidth: 520
     readonly property int popoutMaxHeight: 760
-    readonly property int popoutMinHeight: 420
     popoutHeight: {
         const scr = root.parentScreen || Screen;
         const screenHeight = (scr && scr.height) ? scr.height : root.popoutMaxHeight;
         const reserved = root.barThickness + 96;
-        return Math.max(root.popoutMinHeight, Math.min(root.popoutMaxHeight, screenHeight - reserved));
+        return Math.max(1, Math.min(root.popoutMaxHeight, screenHeight - reserved));
     }
 
     horizontalBarPill: Component {

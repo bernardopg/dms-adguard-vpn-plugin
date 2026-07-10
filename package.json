@@ -1,0 +1,10 @@
+{
+  "name": "dms-adguard-vpn-plugin-quality",
+  "private": true,
+  "scripts": {
+    "check": "node scripts/check-i18n-keys.mjs && node scripts/test-parsers.mjs && bash scripts/lint-markdown.sh && bash scripts/validate-qml.sh"
+  },
+  "devDependencies": {
+    "markdownlint-cli": "0.49.0"
+  }
+}

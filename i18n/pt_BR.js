@@ -35,6 +35,8 @@ var translations = ({
     "login.required_body": "Autentique o CLI do AdGuard em um terminal e clique em Atualizar:",
     "dns.leak_warning_title": "DNS pode não passar pelo túnel",
     "dns.leak_warning_body": "Não foi possível configurar o DNS do sistema. As consultas podem vazar para fora do túnel VPN.",
+    "settings.systemd_service.label": "Usar túnel gerenciado pelo systemd",
+    "settings.systemd_service.description": "Delegue conexão e desconexão ao helper opcional adguardvpn-dms-control. Ative somente após instalar e autorizar o serviço de sistema correspondente.",
     "action.copy_command": "Copiar comando",
     "toast.log_opened": "Log do túnel aberto",
     "toast.log_opening": "Abrindo log do túnel...",

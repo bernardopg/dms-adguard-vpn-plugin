@@ -17,6 +17,7 @@ AdGuardVpnService.runCli(args)
 
 - **Binary:** `adguardvpn-cli` (default, configurable via `adguardBinary` setting).
 - **`buildArgs()`** appends `-y`, `--no-progress`, and `-4`/`-6` flags when `includeConnectFlags` is true.
+- **Optional systemd lifecycle:** when `useSystemdService` is enabled, only connect/disconnect operations are delegated through `sudo -n /usr/local/sbin/adguardvpn-dms-control`; reads and configuration still use the configured CLI binary.
 
 ---
 
@@ -47,6 +48,8 @@ These are triggered by user interaction. All timers are **suspended** during exe
 | `setProtocol(proto)` | `config set-protocol <auto\|http2\|quic>` | — |
 | `setUpdateChannel(ch)` | `config set-update-channel <release\|beta\|nightly>` | — |
 | `setDns(dns)` | `config set-dns <upstream>` | — |
+
+With systemd lifecycle enabled, the first three rows map respectively to `connect-fastest`, `connect-location "x"`, and `disconnect` on the fixed control helper. Arguments remain separate process arguments rather than shell text.
 
 ### Connect Preflight
 
@@ -106,6 +109,7 @@ AdGuardVpnService.runCli(args)
 
 - **Binário:** `adguardvpn-cli` por padrão, configurável por `adguardBinary`.
 - **`buildArgs()`:** adiciona `-y`, `--no-progress` e flags `-4`/`-6` quando aplicável.
+- **Ciclo de vida systemd opcional:** com `useSystemdService` ativo, somente conexão/desconexão são delegadas por `sudo -n /usr/local/sbin/adguardvpn-dms-control`; leituras e configurações continuam usando o binário CLI configurado.
 
 ### Operações de leitura
 
@@ -128,6 +132,8 @@ AdGuardVpnService.runCli(args)
 | `setProtocol(proto)` | `config set-protocol <auto\|http2\|quic>` | — |
 | `setUpdateChannel(ch)` | `config set-update-channel <release\|beta\|nightly>` | — |
 | `setDns(dns)` | `config set-dns <upstream>` | — |
+
+Com o ciclo de vida systemd ativo, as três primeiras linhas mapeiam respectivamente para `connect-fastest`, `connect-location "x"` e `disconnect` no helper fixo. Os argumentos continuam separados no processo, sem interpolação em shell.
 
 ### Preflight de conexão
 

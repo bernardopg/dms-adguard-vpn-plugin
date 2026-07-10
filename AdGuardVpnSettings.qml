@@ -332,4 +332,11 @@ PluginSettings {
         description: root.t("settings.bypass_multi_route.description", "Skip the pre-connection check for multiple default routes. Enable if TUN connections are blocked by a false positive on startup or after disconnect.")
         defaultValue: false
     }
+
+    ToggleSetting {
+        settingKey: "useSystemdService"
+        label: root.t("settings.systemd_service.label", "Use systemd-managed tunnel")
+        description: root.t("settings.systemd_service.description", "Delegate connect and disconnect to the optional adguardvpn-dms-control helper. Enable only after installing and authorizing the matching system service.")
+        defaultValue: false
+    }
 }

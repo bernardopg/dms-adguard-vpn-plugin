@@ -3,6 +3,8 @@
 
 var translations = ({
     "app.title": "AdGuard VPN",
+    "dns.leak_warning_title": "DNS가 터널을 우회할 수 있습니다",
+    "dns.leak_warning_body": "시스템 DNS를 구성하지 못했습니다. 쿼리가 VPN 터널 밖으로 유출될 수 있습니다.",
 
     "status.unknown": "알 수 없음",
     "status.connected": "연결됨 ({location})",

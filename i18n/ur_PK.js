@@ -3,6 +3,8 @@
 
 var translations = ({
     "app.title": "AdGuard VPN",
+    "dns.leak_warning_title": "DNS ٹنل کو نظر انداز کر سکتا ہے",
+    "dns.leak_warning_body": "سسٹم DNS کنفیگر نہیں ہو سکا۔ کوئریز VPN ٹنل سے باہر لیک ہو سکتی ہیں۔",
 
     "status.unknown": "نامعلوم",
     "status.connected": "منسلک ({location})",

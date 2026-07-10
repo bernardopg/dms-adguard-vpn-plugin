@@ -5,6 +5,10 @@ const root = resolve(process.cwd());
 const i18nDir = resolve(root, "i18n");
 const baseLocaleFile = "en.js";
 const fullParityLocales = new Set(["pt_BR.js"]);
+const requiredTranslatedKeys = new Set([
+  "dns.leak_warning_title",
+  "dns.leak_warning_body",
+]);
 
 function extractKeys(fileContent) {
   const keyRegex = /^\s*"([^"]+)"\s*:/gm;
@@ -45,11 +49,20 @@ for (const localeFile of allLocaleFiles) {
 
   const missingInLocale = diff(baseKeys, localeKeys);
   const extraInLocale = diff(localeKeys, baseKeys);
+  const missingRequired = diff(requiredTranslatedKeys, localeKeys);
 
   if (extraInLocale.length > 0) {
     hasErrors = true;
     console.error(`- Unknown keys in ${localeFile}:`);
     for (const key of extraInLocale) {
+      console.error(`  - ${key}`);
+    }
+  }
+
+  if (missingRequired.length > 0) {
+    hasErrors = true;
+    console.error(`- Missing required translated keys in ${localeFile}:`);
+    for (const key of missingRequired) {
       console.error(`  - ${key}`);
     }
   }

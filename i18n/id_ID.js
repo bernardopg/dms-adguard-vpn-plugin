@@ -3,6 +3,8 @@
 
 var translations = ({
     "app.title": "AdGuard VPN",
+    "dns.leak_warning_title": "DNS mungkin melewati terowongan",
+    "dns.leak_warning_body": "DNS sistem tidak dapat dikonfigurasi. Kueri mungkin bocor di luar terowongan VPN.",
 
     "status.unknown": "Tidak diketahui",
     "status.connected": "Terhubung ({location})",

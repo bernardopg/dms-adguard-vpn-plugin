@@ -98,9 +98,11 @@ Connect actions use `prepareDisconnectedRuntime()` before invoking the CLI. The 
 
 All connect actions use `buildArgs()` to append `-y`, `--no-progress`, and IP stack flags consistently.
 
+When the opt-in `useSystemdService` setting is enabled, lifecycle operations use the fixed `adguardvpn-dms-control` helper through non-interactive `sudo`; all reads and configuration writes remain on `adguardBinary`.
+
 ### Reconnect Logic
 
-- `maybeScheduleReconnect(wasConnected, nowConnected)` triggers a 5 s timer when the tunnel drops.
+- `maybeScheduleReconnect(wasConnected, nowConnected)` retries after 5 s, 15 s, and 45 s when the tunnel drops.
 - Suppressed after explicit `disconnect()` to prevent unwanted reconnects.
 
 ---

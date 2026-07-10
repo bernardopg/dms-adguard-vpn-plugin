@@ -35,6 +35,8 @@ var translations = ({
     "login.required_body": "Authenticate the AdGuard CLI in a terminal, then hit Refresh:",
     "dns.leak_warning_title": "DNS may bypass the tunnel",
     "dns.leak_warning_body": "System DNS could not be configured. Queries may leak outside the VPN tunnel.",
+    "settings.systemd_service.label": "Use systemd-managed tunnel",
+    "settings.systemd_service.description": "Delegate connect and disconnect to the optional adguardvpn-dms-control helper. Enable only after installing and authorizing the matching system service.",
     "action.copy_command": "Copy command",
     "toast.log_opened": "Tunnel log opened",
     "toast.log_opening": "Opening tunnel log...",

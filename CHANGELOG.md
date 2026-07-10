@@ -9,10 +9,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-10
+
 ### Added
 
 - Ping badges in the location list are now color-coded (green/amber/red tiers) so latency is readable at a glance, not just as a number.
 - DNS leak warning banner: when `adguardvpn-cli` reports "System DNS could not be configured" on connect/status, the popout now shows a persistent warning in the hero instead of staying silent about queries potentially bypassing the tunnel.
+- Optional systemd-managed lifecycle mode can now be enabled directly in Settings → Advanced after installing the external control helper.
 
 ### Fixed
 
@@ -20,6 +23,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 - `openTunnelLog` now guards against concurrent double-invocation (rapid double-click) with a dedicated `tunnelLogOpening` flag instead of being able to spawn duplicate terminals.
 - Popout height is no longer a fixed `760`; it now clamps to the screen height (via `parentScreen`/`Screen`, same fallback the DMS `PluginComponent` uses internally) so it no longer overflows short displays (e.g. 768p with a bar).
 - Connected location name display (`SãO PAULO`, an upstream `adguardvpn-cli` capitalization quirk) is now normalized to title case (`São Paulo`) in the bar pill and hero title.
+- Popout height now honors the actual available screen space even when it is below the previous 420 px minimum.
+- DNS leak warnings are translated in all 22 shipped locales.
+
+### Security
+
+- GitHub Actions are pinned to immutable commit SHAs and Markdown lint dependencies are locked with `npm ci --ignore-scripts`.
+- Markdown lint now checks only tracked documentation, avoiding false failures from local operational files.
 
 ---
 
@@ -228,10 +238,13 @@ Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês ac
 
 ### [Não lançado]
 
+### [1.5.0] - 2026-07-10
+
 #### Adicionado
 
 - Badges de ping na lista de localizações agora têm cor por faixa (verde/âmbar/vermelho), permitindo avaliar a latência num relance, não só pelo número.
 - Banner de vazamento de DNS: quando o `adguardvpn-cli` reporta "System DNS could not be configured" no connect/status, o popout agora mostra um aviso persistente no hero em vez de ficar em silêncio sobre consultas DNS que podem vazar para fora do túnel.
+- O modo opcional de ciclo de vida gerenciado pelo systemd agora pode ser ativado diretamente em Configurações → Avançado após instalar o helper externo de controle.
 
 #### Corrigido
 
@@ -239,6 +252,13 @@ Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês ac
 - `openTunnelLog` agora tem guard contra dupla invocação concorrente (clique duplo rápido) via flag dedicada `tunnelLogOpening`, em vez de poder lançar terminais duplicados.
 - Altura do popout deixou de ser fixa em `760`; agora é clampada pela altura da tela (via `parentScreen`/`Screen`, mesmo fallback usado internamente pelo `PluginComponent` do DMS), eliminando o estouro em telas baixas (ex.: 768p com barra).
 - Exibição do nome da localização conectada (`SãO PAULO`, quirk de capitalização do próprio `adguardvpn-cli`) agora é normalizada para title case (`São Paulo`) no pill da barra e no título do hero.
+- A altura do popout agora respeita o espaço real disponível mesmo quando ele fica abaixo do mínimo anterior de 420 px.
+- Os avisos de vazamento de DNS estão traduzidos nos 22 locales distribuídos.
+
+#### Segurança
+
+- As GitHub Actions estão fixadas em SHAs imutáveis e as dependências do lint Markdown estão travadas com `npm ci --ignore-scripts`.
+- O lint Markdown agora verifica apenas documentação versionada, evitando falhas falsas causadas por arquivos operacionais locais.
 
 ### [1.4.0] - 2026-06-12
 

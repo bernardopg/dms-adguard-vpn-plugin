@@ -3,6 +3,8 @@
 
 var translations = ({
     "app.title": "AdGuard VPN",
+    "dns.leak_warning_title": "DNS может обходить туннель",
+    "dns.leak_warning_body": "Не удалось настроить системный DNS. Запросы могут уходить за пределы VPN-туннеля.",
 
     "status.unknown": "Неизвестно",
     "status.connected": "Подключено ({location})",

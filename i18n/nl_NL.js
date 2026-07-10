@@ -3,6 +3,8 @@
 
 var translations = ({
     "app.title": "AdGuard VPN",
+    "dns.leak_warning_title": "DNS kan de tunnel omzeilen",
+    "dns.leak_warning_body": "De systeem-DNS kon niet worden ingesteld. Aanvragen kunnen buiten de VPN-tunnel lekken.",
 
     "status.unknown": "Onbekend",
     "status.connected": "Verbonden ({location})",
