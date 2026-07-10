@@ -21,6 +21,7 @@ Item {
             autoRefreshLocations: true,
             autoConnectOnStartup: false,
             autoReconnectOnDrop: false,
+            useSystemdService: false,
             favoriteLocationTargets: [],
             bypassMultiRouteCheck: false
         })
@@ -34,6 +35,7 @@ Item {
     property bool autoRefreshLocations: defaults.autoRefreshLocations
     property bool autoConnectOnStartup: defaults.autoConnectOnStartup
     property bool autoReconnectOnDrop: defaults.autoReconnectOnDrop
+    property bool useSystemdService: defaults.useSystemdService
     property var favoriteLocationTargets: defaults.favoriteLocationTargets
     property bool bypassMultiRouteCheck: defaults.bypassMultiRouteCheck
     property bool initialSettingsLoaded: false
@@ -211,6 +213,7 @@ Item {
         autoRefreshLocations = asBool(load("autoRefreshLocations", defaults.autoRefreshLocations), defaults.autoRefreshLocations);
         autoConnectOnStartup = asBool(load("autoConnectOnStartup", defaults.autoConnectOnStartup), defaults.autoConnectOnStartup);
         autoReconnectOnDrop = asBool(load("autoReconnectOnDrop", defaults.autoReconnectOnDrop), defaults.autoReconnectOnDrop);
+        useSystemdService = asBool(load("useSystemdService", defaults.useSystemdService), defaults.useSystemdService);
         const storedFavoriteTargets = PluginService.loadPluginData(pluginId, "favoriteLocationTargets");
         const legacyFavoriteIsos = PluginService.loadPluginData(pluginId, "favoriteLocationIsos");
         const favoriteSource = storedFavoriteTargets !== undefined && storedFavoriteTargets !== null ? storedFavoriteTargets : (legacyFavoriteIsos !== undefined && legacyFavoriteIsos !== null ? legacyFavoriteIsos : defaults.favoriteLocationTargets);
@@ -320,6 +323,10 @@ Item {
     }
 
     function serviceLifecycleCommand(operation, args) {
+        if (!useSystemdService) {
+            return null;
+        }
+
         const control = ["sudo", "-n", "/usr/local/sbin/adguardvpn-dms-control"];
 
         if (operation === "connectFastest") {
@@ -1095,7 +1102,7 @@ Item {
             }, options && options.timeoutMs ? options.timeoutMs : undefined);
         };
 
-        if (options && options.prepareDisconnectedRuntime && !isServiceLifecycleOperation(operation)) {
+        if (options && options.prepareDisconnectedRuntime && !(useSystemdService && isServiceLifecycleOperation(operation))) {
             runningCommand = `${operation}.prepare`;
             prepareDisconnectedRuntime((prepStatus, prepExitCode) => {
                 if (prepExitCode === 0) {

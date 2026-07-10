@@ -50,6 +50,15 @@
 
 ## 🚀 Installation
 
+### Optional systemd-managed tunnel
+
+By default the plugin invokes `adguardvpn-cli` directly, so it works without
+extra system services. Advanced setups can set `useSystemdService: true` in
+the plugin settings and provide `/usr/local/sbin/adguardvpn-dms-control`; in
+that mode connect and disconnect actions delegate the persistent tunnel to a
+root systemd service rather than leaving it in the DMS cgroup. Keep this opt-in
+unless the matching service and control wrapper have been installed.
+
 ### 1. Clone into DMS plugins directory
 
 ```bash
