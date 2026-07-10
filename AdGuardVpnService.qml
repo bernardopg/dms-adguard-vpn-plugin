@@ -315,9 +315,31 @@ Item {
 
     // Proc.runCommand signature: (id, command, callback, debounceMs, timeoutMs).
     // Command ids are unique per call, so debounce is useless here — always 0.
+    function isServiceLifecycleOperation(operation) {
+        return operation === "connectFastest" || operation === "connectLocation" || operation === "disconnect";
+    }
+
+    function serviceLifecycleCommand(operation, args) {
+        const control = ["sudo", "-n", "/usr/local/sbin/adguardvpn-dms-control"];
+
+        if (operation === "connectFastest") {
+            return control.concat(["connect-fastest"]);
+        }
+        if (operation === "connectLocation") {
+            const locationIndex = args.indexOf("-l");
+            const location = locationIndex >= 0 ? args[locationIndex + 1] : "";
+            return control.concat(["connect-location", location]);
+        }
+        if (operation === "disconnect") {
+            return control.concat(["disconnect"]);
+        }
+        return null;
+    }
+
     function runCli(operation, args, callback, timeoutMs) {
         const commandId = `${pluginId}.${operation}.${Date.now()}`;
-        const command = [adguardBinary].concat(args || []);
+        const lifecycleCommand = isServiceLifecycleOperation(operation) ? serviceLifecycleCommand(operation, args || []) : null;
+        const command = lifecycleCommand || [adguardBinary].concat(args || []);
         const timeoutValue = timeoutMs !== undefined && timeoutMs !== null ? timeoutMs : 15000;
 
         Proc.runCommand(commandId, command, (stdout, exitCode) => {
@@ -1073,7 +1095,7 @@ Item {
             }, options && options.timeoutMs ? options.timeoutMs : undefined);
         };
 
-        if (options && options.prepareDisconnectedRuntime) {
+        if (options && options.prepareDisconnectedRuntime && !isServiceLifecycleOperation(operation)) {
             runningCommand = `${operation}.prepare`;
             prepareDisconnectedRuntime((prepStatus, prepExitCode) => {
                 if (prepExitCode === 0) {

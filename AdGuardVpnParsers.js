@@ -50,6 +50,16 @@ function parseStatusOutput(clean) {
         };
     }
 
+    if (/^VPN active, but status unavailable$/i.test(firstLine)) {
+        return {
+            connected: true,
+            connectedLocation: "",
+            connectedMode: "",
+            tunnelInterface: "",
+            firstLine: firstLine
+        };
+    }
+
     let location = "";
     let mode = "";
     let iface = "";
