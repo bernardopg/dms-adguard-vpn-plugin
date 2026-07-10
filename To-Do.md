@@ -16,6 +16,7 @@
 
 ## P2 — Melhorias
 
+- [ ] **Capitalização quebrada em nomes de localização com acento** — descoberto 2026-07-10: o próprio `adguardvpn-cli` emite `SãO PAULO` (confirmado em hex: `ã` minúsculo dentro de string em bold/uppercase) — não é bug do plugin, mas dá pra mascarar cosmeticamente normalizando a exibição de `connectedLocation` (title-case) em vez de repassar cru.
 - [ ] **Indicador visual de ping** — colorir o badge de ping (verde <80ms, amarelo <150, vermelho acima) nos cards de localização.
 - [ ] **Confirmação/feedback de favoritos** — toast leve ou animação na estrela ao favoritar.
 - [ ] **Copiar diagnóstico** — botão "copiar" no bloco Command output / last command.

@@ -33,6 +33,8 @@ var translations = ({
     "toast.copy_failed": "Não foi possível copiar para a área de transferência",
     "login.required_title": "Sessão não iniciada",
     "login.required_body": "Autentique o CLI do AdGuard em um terminal e clique em Atualizar:",
+    "dns.leak_warning_title": "DNS pode não passar pelo túnel",
+    "dns.leak_warning_body": "Não foi possível configurar o DNS do sistema. As consultas podem vazar para fora do túnel VPN.",
     "action.copy_command": "Copiar comando",
     "toast.log_opened": "Log do túnel aberto",
     "toast.log_opening": "Abrindo log do túnel...",

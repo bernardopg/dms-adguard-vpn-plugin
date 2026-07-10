@@ -31,6 +31,7 @@ function parseStatusOutput(clean) {
 
     const firstLine = lines[0];
     const fullOutput = lines.join("\n");
+    const dnsWarning = /System DNS could not be configured/i.test(fullOutput);
     const disconnectPattern = /not\s+connected|disconnected|not\s+running|stopped/i;
     if (disconnectPattern.test(firstLine) || disconnectPattern.test(fullOutput)) {
         return {
@@ -46,6 +47,7 @@ function parseStatusOutput(clean) {
             connectedLocation: connectedWithIface[1].trim(),
             connectedMode: connectedWithIface[2].trim().toUpperCase(),
             tunnelInterface: connectedWithIface[3].trim(),
+            dnsWarning: dnsWarning,
             firstLine: firstLine
         };
     }
@@ -53,6 +55,7 @@ function parseStatusOutput(clean) {
     if (/^VPN active, but status unavailable$/i.test(firstLine)) {
         return {
             connected: true,
+            dnsWarning: dnsWarning,
             connectedLocation: "",
             connectedMode: "",
             tunnelInterface: "",
@@ -103,6 +106,7 @@ function parseStatusOutput(clean) {
             connectedLocation: location,
             connectedMode: mode,
             tunnelInterface: iface,
+            dnsWarning: dnsWarning,
             firstLine: firstLine
         };
     }
@@ -111,6 +115,7 @@ function parseStatusOutput(clean) {
     return {
         fallback: true,
         isConnected: fallbackConnected,
+        dnsWarning: dnsWarning,
         firstLine: firstLine
     };
 }

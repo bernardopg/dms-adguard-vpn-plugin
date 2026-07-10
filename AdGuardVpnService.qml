@@ -58,6 +58,7 @@ Item {
     property string connectedLocation: ""
     property string connectedMode: ""
     property string tunnelInterface: ""
+    property bool dnsWarning: false
 
     property string accountEmail: ""
     property string accountTier: ""
@@ -388,6 +389,7 @@ Item {
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
+            dnsWarning = false;
             lastError = statusSummary;
             maybeScheduleReconnect(wasConnected, isConnected);
             return;
@@ -403,6 +405,7 @@ Item {
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
+            dnsWarning = false;
             maybeScheduleReconnect(wasConnected, isConnected);
             return;
         }
@@ -413,6 +416,7 @@ Item {
             connectedLocation = "";
             connectedMode = "";
             tunnelInterface = "";
+            dnsWarning = false;
             maybeScheduleReconnect(wasConnected, isConnected);
             return;
         }
@@ -422,6 +426,7 @@ Item {
             connectedLocation = parsed.connectedLocation || "";
             connectedMode = parsed.connectedMode || "";
             tunnelInterface = parsed.tunnelInterface || "";
+            dnsWarning = !!parsed.dnsWarning;
             statusSummary = t("status.connected", "Connected ({location})", {
                 location: connectedLocation
             });
@@ -434,6 +439,7 @@ Item {
 
         isConnected = !!parsed.isConnected;
         statusSummary = parsed.firstLine || t("status.unknown", "Unknown");
+        dnsWarning = isConnected ? !!parsed.dnsWarning : false;
 
         if (!isConnected) {
             connectedLocation = "";

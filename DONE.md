@@ -5,6 +5,12 @@
 
 ---
 
+## Pós-v1.4.0 — 2026-07-10
+
+- [x] **Aviso de vazamento de DNS nunca era capturado** — ✅ 2026-07-10: descoberta ao reconectar manualmente e ver `Warning: System DNS could not be configured` no CLI, nunca exposto no plugin. `AdGuardVpnParsers.js` agora detecta a linha em `parseStatusOutput` (`dnsWarning`), `AdGuardVpnService.qml` expõe `dnsWarning: bool` (resetado em todo branch de status), `AdGuardVpnWidget.qml` mostra banner persistente no hero (mesmo padrão visual do banner "Sessão não iniciada"). 2 testes novos em `scripts/test-parsers.mjs` (28/28 passando). Chaves i18n `dns.leak_warning_title`/`dns.leak_warning_body` em en+pt_BR (paridade estrita mantida).
+
+---
+
 ## P0 — Bugs
 
 - [x] **Input de localização é apagado enquanto o usuário digita** — ✅ 2026-06-11 (v2): refatorado para `readonly property savedDefaultLocation` (binding reativo a `pluginData`) + seed por abertura de popout + sync externo só quando o campo não está focado. Elimina a corrida de init que deixava o campo vazio mesmo com padrão salvo (verificado visualmente via screenshot).

@@ -71,6 +71,20 @@ test("status: connected with mode and interface", () => {
     eq(r.tunnelInterface, "tun0", "iface");
 });
 
+test("status: dns leak warning detected", () => {
+    const r = P.parseStatusOutput([
+        "Connected to São Paulo in TUN mode, running on tun0",
+        "Warning: System DNS could not be configured. DNS queries may bypass the VPN tunnel"
+    ].join("\n"));
+    eq(r.connected, true, "connected");
+    eq(r.dnsWarning, true, "dns warning flagged");
+});
+
+test("status: no dns leak warning when absent", () => {
+    const r = P.parseStatusOutput("Connected to São Paulo in TUN mode, running on tun0");
+    eq(r.dnsWarning, false, "no dns warning");
+});
+
 test("status: connected simple", () => {
     const r = P.parseStatusOutput("Connected to New York");
     eq(r.connected, true, "connected");

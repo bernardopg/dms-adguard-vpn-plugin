@@ -814,6 +814,39 @@ PluginComponent {
                                     }
                                 }
 
+                                Rectangle {
+                                    visible: AdGuardVpnService.isConnected && AdGuardVpnService.dnsWarning
+                                    width: parent.width
+                                    implicitHeight: dnsWarningColumn.implicitHeight + Theme.spacingM * 2
+                                    radius: Theme.cornerRadius
+                                    color: Theme.withAlpha(Theme.warning, 0.1)
+                                    border.width: 1
+                                    border.color: Theme.withAlpha(Theme.warning, 0.32)
+
+                                    Column {
+                                        id: dnsWarningColumn
+                                        anchors.fill: parent
+                                        anchors.margins: Theme.spacingM
+                                        spacing: Theme.spacingS
+
+                                        StyledText {
+                                            width: parent.width
+                                            text: root.t("dns.leak_warning_title", "DNS may bypass the tunnel")
+                                            color: Theme.warning
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            font.weight: Font.DemiBold
+                                        }
+
+                                        StyledText {
+                                            width: parent.width
+                                            text: root.t("dns.leak_warning_body", "System DNS could not be configured. Queries may leak outside the VPN tunnel.")
+                                            color: Theme.surfaceVariantText
+                                            font.pixelSize: Theme.fontSizeSmall
+                                            wrapMode: Text.WordWrap
+                                        }
+                                    }
+                                }
+
                                 Flow {
                                     width: parent.width
                                     spacing: Theme.spacingS

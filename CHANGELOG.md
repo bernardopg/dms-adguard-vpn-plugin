@@ -9,6 +9,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+### Added
+
+- DNS leak warning banner: when `adguardvpn-cli` reports "System DNS could not be configured" on connect/status, the popout now shows a persistent warning in the hero instead of staying silent about queries potentially bypassing the tunnel.
+
 ---
 
 ## [1.4.0] - 2026-06-12
@@ -215,6 +219,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês acima é a fonte primária; esta seção fornece a tradução PT-BR.
 
 ### [Não lançado]
+
+#### Adicionado
+
+- Banner de vazamento de DNS: quando o `adguardvpn-cli` reporta "System DNS could not be configured" no connect/status, o popout agora mostra um aviso persistente no hero em vez de ficar em silêncio sobre consultas DNS que podem vazar para fora do túnel.
 
 ### [1.4.0] - 2026-06-12
 
