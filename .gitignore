@@ -6,3 +6,6 @@
 .claude/
 .vscode/
 .qmlls.ini
+.headroom/
+.tokensave/
+.serena/
