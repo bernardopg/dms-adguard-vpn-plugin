@@ -112,6 +112,15 @@ test("status: disconnected variants", () => {
     }
 });
 
+test("status: connected first line survives disconnect keyword in auxiliary line", () => {
+    const r = P.parseStatusOutput([
+        "Connected to Frankfurt in TUN mode, running on tun0",
+        "Note: a previous session was stopped due to a network change"
+    ].join("\n"));
+    eq(r.connected, true, "still connected");
+    eq(r.disconnected, undefined, "not flagged disconnected");
+});
+
 test("status: empty output", () => {
     eq(P.parseStatusOutput("").empty, true);
     eq(P.parseStatusOutput("   \n  ").empty, true);

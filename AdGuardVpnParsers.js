@@ -33,7 +33,7 @@ function parseStatusOutput(clean) {
     const fullOutput = lines.join("\n");
     const dnsWarning = /System DNS could not be configured/i.test(fullOutput);
     const disconnectPattern = /not\s+connected|disconnected|not\s+running|stopped/i;
-    if (disconnectPattern.test(firstLine) || disconnectPattern.test(fullOutput)) {
+    if (disconnectPattern.test(firstLine)) {
         return {
             disconnected: true,
             firstLine: firstLine

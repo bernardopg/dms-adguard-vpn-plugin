@@ -93,7 +93,7 @@ PluginComponent {
             return root.t("bar.pending", "...");
         }
         if (AdGuardVpnService.isConnected) {
-            return AdGuardVpnService.connectedLocation || root.t("bar.connected_short", "Connected");
+            return root.formatLocationName(AdGuardVpnService.connectedLocation) || root.t("bar.connected_short", "Connected");
         }
         return root.t("bar.off", "Off");
     }
@@ -104,7 +104,7 @@ PluginComponent {
         }
         if (AdGuardVpnService.isConnected) {
             return root.t("summary.connected_to", "Connected to {location}", {
-                location: root.safeText(AdGuardVpnService.connectedLocation, root.t("summary.location_unknown", "location unknown"))
+                location: root.formatLocationName(root.safeText(AdGuardVpnService.connectedLocation, root.t("summary.location_unknown", "location unknown")))
             });
         }
         return root.safeText(AdGuardVpnService.statusSummary, root.t("status.disconnected", "Disconnected"));
@@ -142,6 +142,14 @@ PluginComponent {
             return fallback;
         }
         return value;
+    }
+
+    function formatLocationName(value) {
+        const text = (value || "").toString();
+        if (!text) {
+            return text;
+        }
+        return text.toLowerCase().replace(/(^|[\s-])(\S)/g, (match, sep, ch) => sep + ch.toUpperCase());
     }
 
     component VpnActionButton: StyledRect {
@@ -549,7 +557,14 @@ PluginComponent {
     }
 
     popoutWidth: 520
-    popoutHeight: 760
+    readonly property int popoutMaxHeight: 760
+    readonly property int popoutMinHeight: 420
+    popoutHeight: {
+        const scr = root.parentScreen || Screen;
+        const screenHeight = (scr && scr.height) ? scr.height : root.popoutMaxHeight;
+        const reserved = root.barThickness + 96;
+        return Math.max(root.popoutMinHeight, Math.min(root.popoutMaxHeight, screenHeight - reserved));
+    }
 
     horizontalBarPill: Component {
         Row {
@@ -979,7 +994,7 @@ PluginComponent {
                                             iconName: "article"
                                             label: root.t("action.open_log", "Open Log")
                                             compact: true
-                                            actionEnabled: !AdGuardVpnService.commandRunning
+                                            actionEnabled: !AdGuardVpnService.commandRunning && !AdGuardVpnService.tunnelLogOpening
                                             onTriggered: {
                                                 ToastService.showInfo(root.t("app.title", "AdGuard VPN"), root.t("toast.log_opening", "Opening tunnel log..."));
                                                 AdGuardVpnService.openTunnelLog();

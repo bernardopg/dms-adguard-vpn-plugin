@@ -5,18 +5,8 @@
 
 ---
 
-## P1 — Lógica
-
-- [ ] **Detecção de "disconnected" agressiva demais** — `AdGuardVpnParsers.js:34-35`: `disconnectPattern` testa o output inteiro; qualquer linha auxiliar contendo "disconnected"/"stopped" (ex.: aviso histórico do CLI) marca o estado como desconectado mesmo com a primeira linha "Connected to …". Restringir o teste do `fullOutput` a padrões mais específicos ou priorizar o match de connected na primeira linha antes do disconnect no full output.
-- [ ] **`openTunnelLog` roda fora do guard `commandRunning`** — pode rodar em paralelo com connect/disconnect (ambos via `Proc.runCommand`). Baixo risco, mas avaliar guard ou fila.
-
-## P1 — UI/UX
-
-- [ ] **`popoutHeight: 760` fixo** — em telas baixas (768p com barra) estoura. Calcular: `Math.min(760, Screen.height - margens)` ou equivalente DMS. (Pendente: requer verificar como o DMS clampa popouts antes de mexer.)
-
 ## P2 — Melhorias
 
-- [ ] **Capitalização quebrada em nomes de localização com acento** — descoberto 2026-07-10: o próprio `adguardvpn-cli` emite `SãO PAULO` (confirmado em hex: `ã` minúsculo dentro de string em bold/uppercase) — não é bug do plugin, mas dá pra mascarar cosmeticamente normalizando a exibição de `connectedLocation` (title-case) em vez de repassar cru.
 - [ ] **Indicador visual de ping** — colorir o badge de ping (verde <80ms, amarelo <150, vermelho acima) nos cards de localização.
 - [ ] **Confirmação/feedback de favoritos** — toast leve ou animação na estrela ao favoritar.
 - [ ] **Copiar diagnóstico** — botão "copiar" no bloco Command output / last command.

@@ -13,6 +13,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 - DNS leak warning banner: when `adguardvpn-cli` reports "System DNS could not be configured" on connect/status, the popout now shows a persistent warning in the hero instead of staying silent about queries potentially bypassing the tunnel.
 
+### Fixed
+
+- Status parser no longer misreads a connected session as disconnected because of an auxiliary output line containing "disconnected"/"stopped" — the disconnect signal is now matched against the first line only, where every supported CLI status format already places it.
+- `openTunnelLog` now guards against concurrent double-invocation (rapid double-click) with a dedicated `tunnelLogOpening` flag instead of being able to spawn duplicate terminals.
+- Popout height is no longer a fixed `760`; it now clamps to the screen height (via `parentScreen`/`Screen`, same fallback the DMS `PluginComponent` uses internally) so it no longer overflows short displays (e.g. 768p with a bar).
+- Connected location name display (`SãO PAULO`, an upstream `adguardvpn-cli` capitalization quirk) is now normalized to title case (`São Paulo`) in the bar pill and hero title.
+
 ---
 
 ## [1.4.0] - 2026-06-12
@@ -223,6 +230,13 @@ Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês ac
 #### Adicionado
 
 - Banner de vazamento de DNS: quando o `adguardvpn-cli` reporta "System DNS could not be configured" no connect/status, o popout agora mostra um aviso persistente no hero em vez de ficar em silêncio sobre consultas DNS que podem vazar para fora do túnel.
+
+#### Corrigido
+
+- O parser de status não confunde mais uma sessão conectada com desconectada por causa de uma linha auxiliar contendo "disconnected"/"stopped" — o sinal de desconexão agora é testado só na primeira linha, onde todos os formatos suportados do CLI já colocam essa informação.
+- `openTunnelLog` agora tem guard contra dupla invocação concorrente (clique duplo rápido) via flag dedicada `tunnelLogOpening`, em vez de poder lançar terminais duplicados.
+- Altura do popout deixou de ser fixa em `760`; agora é clampada pela altura da tela (via `parentScreen`/`Screen`, mesmo fallback usado internamente pelo `PluginComponent` do DMS), eliminando o estouro em telas baixas (ex.: 768p com barra).
+- Exibição do nome da localização conectada (`SãO PAULO`, quirk de capitalização do próprio `adguardvpn-cli`) agora é normalizada para title case (`São Paulo`) no pill da barra e no título do hero.
 
 ### [1.4.0] - 2026-06-12
 

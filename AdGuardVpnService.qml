@@ -52,6 +52,7 @@ Item {
     property string cliVersion: ""
     property bool commandRunning: false
     property string runningCommand: ""
+    property bool tunnelLogOpening: false
 
     property bool isConnected: false
     property string statusSummary: AdGuardVpnI18n.tr("status.unknown", "Unknown")
@@ -830,6 +831,12 @@ Item {
     }
 
     function openTunnelLog() {
+        if (tunnelLogOpening) {
+            ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.log_opening", "Opening tunnel log..."));
+            return;
+        }
+        tunnelLogOpening = true;
+
         const openScript = `
             resolve_home() {
                 if [ -n "$HOME" ]; then
@@ -936,6 +943,7 @@ Item {
         `;
 
         Proc.runCommand(`${pluginId}.openTunnelLog.${Date.now()}`, ["sh", "-lc", openScript], (stdout, exitCode) => {
+            tunnelLogOpening = false;
             if (exitCode === 0) {
                 ToastService.showInfo(t("app.title", "AdGuard VPN"), t("toast.log_opened", "Tunnel log opened"));
                 return;
