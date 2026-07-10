@@ -144,6 +144,19 @@ PluginComponent {
         return value;
     }
 
+    function pingToneColor(ping) {
+        if (ping < 0) {
+            return Theme.surfaceVariantText;
+        }
+        if (ping < 80) {
+            return Theme.success;
+        }
+        if (ping < 150) {
+            return Theme.warning;
+        }
+        return Theme.error;
+    }
+
     function formatLocationName(value) {
         const text = (value || "").toString();
         if (!text) {
@@ -1291,18 +1304,20 @@ PluginComponent {
                                                 }
 
                                                 Rectangle {
+                                                    readonly property color pingColor: root.pingToneColor(locationCard.locationItem.ping)
+
                                                     implicitWidth: pingLabel.implicitWidth + Theme.spacingM * 2
                                                     height: 28
                                                     radius: 14
-                                                    color: Theme.withAlpha(Theme.surfaceText, 0.06)
+                                                    color: Theme.withAlpha(pingColor, 0.12)
                                                     border.width: 1
-                                                    border.color: Theme.withAlpha(Theme.surfaceText, 0.08)
+                                                    border.color: Theme.withAlpha(pingColor, 0.4)
 
                                                     StyledText {
                                                         id: pingLabel
                                                         anchors.centerIn: parent
                                                         text: locationCard.locationItem.ping >= 0 ? `${locationCard.locationItem.ping}ms` : "-"
-                                                        color: Theme.surfaceVariantText
+                                                        color: parent.pingColor
                                                         font.pixelSize: Theme.fontSizeSmall - 1
                                                         font.weight: Font.Medium
                                                     }

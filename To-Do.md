@@ -7,7 +7,6 @@
 
 ## P2 — Melhorias
 
-- [ ] **Indicador visual de ping** — colorir o badge de ping (verde <80ms, amarelo <150, vermelho acima) nos cards de localização.
 - [ ] **Confirmação/feedback de favoritos** — toast leve ou animação na estrela ao favoritar.
 - [ ] **Copiar diagnóstico** — botão "copiar" no bloco Command output / last command.
 - [ ] **Limpar 8 chaves i18n órfãs** — `summary.account`, `summary.mode_protocol_channel`, `summary.cli_last_sync`, `summary.last_command`, `summary.last_command_none`, `summary.last_command_output`, `section.quick_actions`, `locations.top_last_update` definidas em `en.js`/locales mas não usadas. (`action.favorite`/`action.unfavorite` foram reusadas como `Accessible.name` da estrela em 2026-06-11.)

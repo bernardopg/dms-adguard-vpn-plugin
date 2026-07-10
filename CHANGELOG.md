@@ -11,6 +11,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ### Added
 
+- Ping badges in the location list are now color-coded (green/amber/red tiers) so latency is readable at a glance, not just as a number.
 - DNS leak warning banner: when `adguardvpn-cli` reports "System DNS could not be configured" on connect/status, the popout now shows a persistent warning in the hero instead of staying silent about queries potentially bypassing the tunnel.
 
 ### Fixed
@@ -229,6 +230,7 @@ Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês ac
 
 #### Adicionado
 
+- Badges de ping na lista de localizações agora têm cor por faixa (verde/âmbar/vermelho), permitindo avaliar a latência num relance, não só pelo número.
 - Banner de vazamento de DNS: quando o `adguardvpn-cli` reporta "System DNS could not be configured" no connect/status, o popout agora mostra um aviso persistente no hero em vez de ficar em silêncio sobre consultas DNS que podem vazar para fora do túnel.
 
 #### Corrigido
