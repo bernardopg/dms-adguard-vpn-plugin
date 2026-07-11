@@ -71,6 +71,27 @@ test("status: connected with mode and interface", () => {
     eq(r.tunnelInterface, "tun0", "iface");
 });
 
+test("status: active but unavailable is a definitive connected state", () => {
+    const r = P.parseStatusOutput([
+        "VPN active, but status unavailable",
+        "You can disconnect by running `/usr/local/bin/adguardvpn-cli disconnect`"
+    ].join("\n"));
+    eq(r.connected, true, "connected");
+    eq(r.connectedLocation, "", "location unavailable");
+    eq(P.isDefinitiveStatus(r), true, "definitive despite CLI exit 10");
+    eq(P.isDefinitiveStatus(P.parseStatusOutput("unexpected CLI failure")), false, "unknown output stays non-definitive");
+});
+
+test("location target converts display key to a CLI-supported city", () => {
+    const locations = [{ iso: "BR", country: "Brazil", city: "São Paulo" }];
+    eq(P.resolveLocationTarget("São Paulo, Brazil", locations), "São Paulo", "city-country display key");
+    eq(P.resolveLocationTarget("Brazil, São Paulo", locations), "São Paulo", "reversed display key");
+    eq(P.resolveLocationTarget("São Paulo", locations), "São Paulo", "city");
+    eq(P.resolveLocationTarget("Brazil", locations), "Brazil", "country");
+    eq(P.resolveLocationTarget("br", locations), "BR", "ISO normalization");
+    eq(P.resolveLocationTarget("Custom target", locations), "Custom target", "unknown target passthrough");
+});
+
 test("status: dns leak warning detected", () => {
     const r = P.parseStatusOutput([
         "Connected to São Paulo in TUN mode, running on tun0",

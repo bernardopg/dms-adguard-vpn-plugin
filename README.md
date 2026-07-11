@@ -7,10 +7,10 @@
 
 <p align="center">
   <a href="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml"><img src="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml/badge.svg" alt="Quality CI" /></a>
-  <img src="https://img.shields.io/badge/version-1.5.0-e8924a" alt="Version 1.5.0" />
+  <img src="https://img.shields.io/badge/version-1.5.1-e8924a" alt="Version 1.5.1" />
   <img src="https://img.shields.io/badge/DankMaterialShell-%E2%89%A5%201.4.0-5a6a8a" alt="DMS >= 1.4.0" />
   <img src="https://img.shields.io/badge/i18n-22%20locales-3b82f6" alt="22 locales" />
-  <img src="https://img.shields.io/badge/parser%20tests-29%20passing-2ea44f" alt="29 parser tests" />
+  <img src="https://img.shields.io/badge/parser%20tests-31%20passing-2ea44f" alt="31 parser tests" />
   <img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="MIT License" />
 </p>
 
@@ -34,7 +34,7 @@
 | **Diagnostics**       | Last command log, tunnel log viewer, login-required banner with copyable command          |
 | **Accessibility**     | Full keyboard navigation (Tab + Enter/Space) with visible focus and Accessible roles      |
 | **Multilingual**      | 22 languages with safe fallback (EN, PT-BR + 20 additional locales)                       |
-| **Tested parsers**    | ANSI-safe, multi-format CLI parsing covered by 29 unit tests in CI                        |
+| **Tested parsers**    | ANSI-safe, multi-format CLI parsing covered by 31 unit tests in CI                        |
 
 ---
 
@@ -295,7 +295,7 @@ Submit to the [DMS Plugin Registry](https://github.com/AvengeMedia/dms-plugin-re
 | **Diagnóstico** | Último comando, visualizador do log do túnel e banner de login com comando copiável |
 | **Acessibilidade** | Navegação completa por teclado (Tab + Enter/Espaço) com foco visível e roles Accessible |
 | **Multilíngue** | 22 idiomas com fallback seguro (EN, PT-BR + 20 locales adicionais) |
-| **Parsers testados** | Remoção de ANSI e parsing multi-formato cobertos por 29 testes unitários no CI |
+| **Parsers testados** | Remoção de ANSI e parsing multi-formato cobertos por 31 testes unitários no CI |
 
 ### Requisitos
 

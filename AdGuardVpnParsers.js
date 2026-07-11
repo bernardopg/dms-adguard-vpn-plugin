@@ -120,6 +120,44 @@ function parseStatusOutput(clean) {
     };
 }
 
+function isDefinitiveStatus(parsed) {
+    return !!(parsed && (parsed.connected === true || parsed.disconnected === true));
+}
+
+function resolveLocationTarget(locationText, locations) {
+    const rawTarget = (locationText || "").toString().trim();
+    if (!rawTarget) {
+        return "";
+    }
+
+    const normalizedInput = rawTarget.toLowerCase();
+    const source = Array.isArray(locations) ? locations : [];
+    for (let i = 0; i < source.length; i++) {
+        const locationItem = source[i] || {};
+        const iso = (locationItem.iso || "").toString().trim();
+        const country = (locationItem.country || "").toString().trim();
+        const city = (locationItem.city || "").toString().trim();
+
+        if (iso && iso.toLowerCase() === normalizedInput) {
+            return iso;
+        }
+        if (city && city.toLowerCase() === normalizedInput) {
+            return city;
+        }
+        if (city && country && (`${city}, ${country}`.toLowerCase() === normalizedInput
+                || `${country}, ${city}`.toLowerCase() === normalizedInput)) {
+            // The CLI accepts a city, a country, or an ISO code, but not the
+            // display/favorite key "city, country" used by the location row.
+            return city;
+        }
+        if (country && country.toLowerCase() === normalizedInput) {
+            return country;
+        }
+    }
+
+    return rawTarget;
+}
+
 function parseLicenseOutput(clean) {
     const lines = (clean || "").split("\n").map(line => line.trim()).filter(Boolean);
 

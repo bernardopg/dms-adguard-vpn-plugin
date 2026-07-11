@@ -380,11 +380,17 @@ Item {
     function parseStatus(stdout, exitCode) {
         const wasConnected = isConnected;
         const clean = cleanOutput(stdout);
+        const parsed = AdGuardVpnParsers.parseStatusOutput(clean);
+        const definitiveStatus = AdGuardVpnParsers.isDefinitiveStatus(parsed);
         lastStatusRaw = clean;
         lastRefreshMs = Date.now();
-        startupStatusKnown = exitCode === 0;
+        startupStatusKnown = exitCode === 0 || definitiveStatus;
 
-        if (exitCode !== 0) {
+        // adguardvpn-cli returns 10 when a privileged/systemd-managed tunnel is
+        // active but its details are unavailable to the caller.  The output is
+        // still a definitive connected state and must not become a false
+        // disconnect merely because the process exit code is non-zero.
+        if (exitCode !== 0 && !definitiveStatus) {
             isConnected = false;
             statusSummary = clean || t("status.failed_read", "Failed to read VPN status");
             connectedLocation = "";
@@ -399,7 +405,6 @@ Item {
         cliAvailable = true;
         lastError = "";
 
-        const parsed = AdGuardVpnParsers.parseStatusOutput(clean);
         if (parsed.empty) {
             isConnected = false;
             statusSummary = t("status.no_output", "No status output");
@@ -428,9 +433,9 @@ Item {
             connectedMode = parsed.connectedMode || "";
             tunnelInterface = parsed.tunnelInterface || "";
             dnsWarning = !!parsed.dnsWarning;
-            statusSummary = t("status.connected", "Connected ({location})", {
-                location: connectedLocation
-            });
+            statusSummary = connectedLocation ? t("status.connected", "Connected ({location})", {
+                    location: connectedLocation
+                }) : (parsed.firstLine || t("bar.connected_short", "Connected"));
             if (!accountEmail && !licenseRefreshInFlight) {
                 refreshLicense();
             }
@@ -731,36 +736,7 @@ Item {
     }
 
     function resolveLocationTarget(locationText) {
-        const rawTarget = (locationText || "").toString().trim();
-        if (!rawTarget) {
-            return "";
-        }
-
-        const normalizedInput = rawTarget.toLowerCase();
-        for (let i = 0; i < locations.length; i++) {
-            const locationItem = locations[i];
-            const iso = (locationItem.iso || "").toString().trim();
-            const country = (locationItem.country || "").toString().trim();
-            const city = (locationItem.city || "").toString().trim();
-
-            if (iso && iso.toLowerCase() === normalizedInput) {
-                return iso;
-            }
-            if (city && city.toLowerCase() === normalizedInput) {
-                return locationTarget(locationItem) || rawTarget;
-            }
-            if (city && country && `${city}, ${country}`.toLowerCase() === normalizedInput) {
-                return locationTarget(locationItem) || rawTarget;
-            }
-            if (city && country && `${country}, ${city}`.toLowerCase() === normalizedInput) {
-                return locationTarget(locationItem) || rawTarget;
-            }
-            if (country && country.toLowerCase() === normalizedInput) {
-                return country;
-            }
-        }
-
-        return rawTarget;
+        return AdGuardVpnParsers.resolveLocationTarget(locationText, locations);
     }
 
     function connectToLocation(locationText) {

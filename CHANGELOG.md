@@ -9,6 +9,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-07-10
+
+### Fixed
+
+- Location-row quick connect now converts the internal `city, country` display/favorite key to the city accepted by `adguardvpn-cli`, fixing failed connections to every listed location.
+- A systemd-managed tunnel reported as `VPN active, but status unavailable` with CLI exit code 10 is now treated as definitively connected instead of producing a false disconnected state.
+- Connected status without location metadata now uses the CLI status line instead of rendering an empty `Connected ()` summary.
+
+> **Full notes ->** [docs/releases/v1.5.1.md](./docs/releases/v1.5.1.md)
+
+---
+
 ## [1.5.0] - 2026-07-10
 
 ### Added
@@ -237,6 +249,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês acima é a fonte primária; esta seção fornece a tradução PT-BR.
 
 ### [Não lançado]
+
+### [1.5.1] - 2026-07-10
+
+#### Corrigido
+
+- A conexão rápida pelos cards agora converte a chave interna de exibição/favorito `cidade, país` para a cidade aceita pelo `adguardvpn-cli`, corrigindo a falha ao conectar em qualquer localização listada.
+- Um túnel gerenciado pelo systemd reportado como `VPN active, but status unavailable` com código de saída 10 agora é reconhecido como conectado em vez de gerar um falso estado desconectado.
+- O estado conectado sem metadados de localização agora usa a linha de status do CLI em vez de renderizar o resumo vazio `Conectado ()`.
+
+> **Notas completas ->** [docs/releases/v1.5.1.md](./docs/releases/v1.5.1.md)
+
+---
 
 ### [1.5.0] - 2026-07-10
 
