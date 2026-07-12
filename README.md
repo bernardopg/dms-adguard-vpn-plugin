@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml"><img src="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml/badge.svg" alt="Quality CI" /></a>
-  <img src="https://img.shields.io/badge/version-1.5.1-e8924a" alt="Version 1.5.1" />
+  <img src="https://img.shields.io/badge/version-1.5.2-e8924a" alt="Version 1.5.2" />
   <img src="https://img.shields.io/badge/DankMaterialShell-%E2%89%A5%201.4.0-5a6a8a" alt="DMS >= 1.4.0" />
   <img src="https://img.shields.io/badge/i18n-22%20locales-3b82f6" alt="22 locales" />
   <img src="https://img.shields.io/badge/parser%20tests-31%20passing-2ea44f" alt="31 parser tests" />

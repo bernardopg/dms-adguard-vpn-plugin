@@ -9,6 +9,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-07-12
+
+### Fixed
+
+- Connected status without location metadata now shows a translated summary instead of the raw English CLI line (`VPN active, but status unavailable`) in the bar pill.
+- Unrecognized status output is framed by a translated message while keeping the raw CLI line as diagnostic detail.
+- Post-action toasts prefer the localized message over the raw CLI output, which is now only a fallback.
+- Tunnel log viewer header, hint and terminal window title are localized (the hint was hardcoded in Portuguese for all locales); values are sanitized before being embedded in the shell script.
+- The protocol "Auto" button label is localized (`protocol.auto`).
+
+> **Full notes ->** [docs/releases/v1.5.2.md](./docs/releases/v1.5.2.md)
+
+---
+
 ## [1.5.1] - 2026-07-10
 
 ### Fixed
@@ -249,6 +263,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês acima é a fonte primária; esta seção fornece a tradução PT-BR.
 
 ### [Não lançado]
+
+### [1.5.2] - 2026-07-12
+
+#### Corrigido
+
+- O estado conectado sem metadados de localização agora exibe um resumo traduzido em vez da linha crua em inglês do CLI (`VPN active, but status unavailable`) na pill da barra.
+- Saídas de status não reconhecidas ganham uma moldura traduzida, mantendo a linha crua do CLI como detalhe de diagnóstico.
+- Os toasts pós-ação priorizam a mensagem localizada sobre a saída crua do CLI, que agora é apenas fallback.
+- O cabeçalho, a dica e o título da janela do visor de log do túnel são localizados (a dica estava fixa em português para todos os idiomas); os valores são sanitizados antes de entrar no script shell.
+- O rótulo do botão de protocolo "Auto" é localizado (`protocol.auto`).
+
+> **Notas completas ->** [docs/releases/v1.5.2.md](./docs/releases/v1.5.2.md)
+
+---
 
 ### [1.5.1] - 2026-07-10
 
