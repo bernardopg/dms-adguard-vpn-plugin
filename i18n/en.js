@@ -10,6 +10,8 @@ var translations = ({
     "status.failed_read": "Failed to read VPN status",
     "status.no_output": "No status output",
     "status.connected": "Connected ({location})",
+    "status.connected_no_details": "Connected (status details unavailable)",
+    "status.unrecognized": "Unrecognized status: {detail}",
     "status.disconnected": "Disconnected",
     "status.locations_parse_failed": "Could not parse locations list from CLI output",
 
@@ -44,6 +46,9 @@ var translations = ({
     "toast.log_open_unsupported": "Could not open a terminal/editor automatically. Log: {path}",
     "toast.log_manual_command": "Run in terminal: {cmd}",
     "toast.log_open_failed": "Failed to open tunnel log",
+    "log.viewer_title": "AdGuard VPN Log",
+    "log.viewer_hint": "Press Ctrl+C to exit.",
+    "protocol.auto": "Auto",
     "toast.reconnect_scheduled": "Connection dropped. Reconnecting...",
     "toast.runtime_busy": "AdGuard VPN runtime is still busy after cleanup. Try again in a few seconds.",
     "toast.runtime_cleanup_failed": "Could not recover the AdGuard VPN runtime before connecting.",

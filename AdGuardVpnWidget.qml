@@ -1429,7 +1429,7 @@ PluginComponent {
                                         VpnActionButton {
                                             Layout.fillWidth: true
                                             iconName: "auto_awesome"
-                                            label: "Auto"
+                                            label: root.t("protocol.auto", "Auto")
                                             compact: true
                                             active: AdGuardVpnService.currentProtocol === "auto"
                                             actionEnabled: root.commandsAvailable

@@ -435,7 +435,7 @@ Item {
             dnsWarning = !!parsed.dnsWarning;
             statusSummary = connectedLocation ? t("status.connected", "Connected ({location})", {
                     location: connectedLocation
-                }) : (parsed.firstLine || t("bar.connected_short", "Connected"));
+                }) : t("status.connected_no_details", "Connected (status details unavailable)");
             if (!accountEmail && !licenseRefreshInFlight) {
                 refreshLicense();
             }
@@ -444,7 +444,9 @@ Item {
         }
 
         isConnected = !!parsed.isConnected;
-        statusSummary = parsed.firstLine || t("status.unknown", "Unknown");
+        statusSummary = parsed.firstLine ? t("status.unrecognized", "Unrecognized status: {detail}", {
+                detail: parsed.firstLine
+            }) : t("status.unknown", "Unknown");
         dnsWarning = isConnected ? !!parsed.dnsWarning : false;
 
         if (!isConnected) {
@@ -813,6 +815,11 @@ Item {
         }
         tunnelLogOpening = true;
 
+        // Translations are embedded in a shell script; strip shell metacharacters.
+        const shSafe = value => String(value || "").replace(/["'`$\\]/g, "");
+        const logViewerTitle = shSafe(t("log.viewer_title", "AdGuard VPN Log"));
+        const logViewerHint = shSafe(t("log.viewer_hint", "Press Ctrl+C to exit."));
+
         const openScript = `
             resolve_home() {
                 if [ -n "$HOME" ]; then
@@ -845,7 +852,7 @@ Item {
 
             [ -z "$TARGET" ] && exit 44
 
-            LOG_CMD='printf "AdGuard VPN log: %s\\nCtrl+C para sair.\\n\\n" "$1"; tail -n 200 -f "$1"'
+            LOG_CMD='printf "%s: %s\\n%s\\n\\n" "${logViewerTitle}" "$1" "${logViewerHint}"; tail -n 200 -f "$1"'
 
             # Terminals block until their window closes. Launch in background and
             # treat "still alive shortly after spawn" as success, so the plugin's
@@ -859,9 +866,9 @@ Item {
 
             if command -v kitty >/dev/null 2>&1; then
                 if [ -n "$KITTY_LISTEN_ON" ]; then
-                    kitty @ launch --type=window --title "AdGuard VPN Log" sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
+                    kitty @ launch --type=window --title "${logViewerTitle}" sh -lc "$LOG_CMD" sh "$TARGET" >/dev/null 2>&1 && exit 0
                 fi
-                launch_bg kitty --title "AdGuard VPN Log" sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
+                launch_bg kitty --title "${logViewerTitle}" sh -lc "$LOG_CMD" sh "$TARGET" && exit 0
                 printf 'DBG:kitty_failed display=%s wayland=%s listen=%s\\n' "\${DISPLAY:-}" "\${WAYLAND_DISPLAY:-}" "\${KITTY_LISTEN_ON:-}"
             fi
 
@@ -1062,7 +1069,7 @@ Item {
                 if (exitCode === 0) {
                     if (toastTitle) {
                         const firstLine = clean.split("\n").map(line => line.trim()).filter(Boolean)[0];
-                        ToastService.showInfo(toastTitle, firstLine || toastMessage || t("toast.done", "Done"));
+                        ToastService.showInfo(toastTitle, toastMessage || firstLine || t("toast.done", "Done"));
                     }
 
                     Qt.callLater(() => {

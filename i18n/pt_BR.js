@@ -10,6 +10,8 @@ var translations = ({
     "status.failed_read": "Falha ao ler o status da VPN",
     "status.no_output": "Sem saída de status",
     "status.connected": "Conectado ({location})",
+    "status.connected_no_details": "Conectado (detalhes de status indisponíveis)",
+    "status.unrecognized": "Status não reconhecido: {detail}",
     "status.disconnected": "Desconectado",
     "status.locations_parse_failed": "Não foi possível interpretar a lista de localizações da saída do CLI",
 
@@ -44,6 +46,9 @@ var translations = ({
     "toast.log_open_unsupported": "Não foi possível abrir automaticamente um terminal/editor. Log: {path}",
     "toast.log_manual_command": "Execute no terminal: {cmd}",
     "toast.log_open_failed": "Falha ao abrir o log do túnel",
+    "log.viewer_title": "Log da AdGuard VPN",
+    "log.viewer_hint": "Pressione Ctrl+C para sair.",
+    "protocol.auto": "Automático",
     "toast.reconnect_scheduled": "Conexão caiu. Reconectando...",
     "toast.runtime_busy": "O runtime do AdGuard VPN ainda está ocupado após a limpeza. Tente novamente em alguns segundos.",
     "toast.runtime_cleanup_failed": "Não foi possível recuperar o runtime do AdGuard VPN antes de conectar.",
