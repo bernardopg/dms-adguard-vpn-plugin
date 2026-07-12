@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml"><img src="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml/badge.svg" alt="Quality CI" /></a>
-  <img src="https://img.shields.io/badge/version-1.5.2-e8924a" alt="Version 1.5.2" />
+  <img src="https://img.shields.io/badge/version-1.5.3-e8924a" alt="Version 1.5.3" />
   <img src="https://img.shields.io/badge/DankMaterialShell-%E2%89%A5%201.4.0-5a6a8a" alt="DMS >= 1.4.0" />
   <img src="https://img.shields.io/badge/i18n-22%20locales-3b82f6" alt="22 locales" />
   <img src="https://img.shields.io/badge/parser%20tests-31%20passing-2ea44f" alt="31 parser tests" />
@@ -33,7 +33,7 @@
 | **Resilience**        | Auto-connect on startup, auto-reconnect with 3-step backoff, connect preflight checks     |
 | **Diagnostics**       | Last command log, tunnel log viewer, login-required banner with copyable command          |
 | **Accessibility**     | Full keyboard navigation (Tab + Enter/Space) with visible focus and Accessible roles      |
-| **Multilingual**      | 22 languages with safe fallback (EN, PT-BR + 20 additional locales)                       |
+| **Multilingual**      | 22 fully translated languages (EN, PT-BR + 20 additional locales)                         |
 | **Tested parsers**    | ANSI-safe, multi-format CLI parsing covered by 31 unit tests in CI                        |
 
 ---
@@ -244,11 +244,12 @@ bash scripts/validate-qml.sh       # QML syntax
 This plugin is now officially **multilang** and ships with:
 
 - **Full locales:** English, Português (Brasil)
-- **Extended locales with English fallback:**
+- **Full locales (previously extended with English fallback):**
   Español, 中文 (简体), हिन्दी, العربية, বাংলা, Français, Deutsch, 日本語, Русский, 한국어,
   Indonesia, Türkçe, Tiếng Việt, Italiano, Polski, Nederlands, فارسی, ไทย, اردو, Bahasa Melayu
 
-Safety-critical DNS leak warnings are translated in every shipped locale; untranslated optional strings fall back to English.
+Every shipped locale is now fully translated (all 179 message keys). Untranslated
+strings, if any are added later, fall back to English.
 
 Adding or extending locales is straightforward — see [i18n/README.md](./i18n/README.md).
 
@@ -294,7 +295,7 @@ Submit to the [DMS Plugin Registry](https://github.com/AvengeMedia/dms-plugin-re
 | **Resiliência** | Auto-conectar ao iniciar, auto-reconectar com backoff em 3 etapas e preflight de conexão |
 | **Diagnóstico** | Último comando, visualizador do log do túnel e banner de login com comando copiável |
 | **Acessibilidade** | Navegação completa por teclado (Tab + Enter/Espaço) com foco visível e roles Accessible |
-| **Multilíngue** | 22 idiomas com fallback seguro (EN, PT-BR + 20 locales adicionais) |
+| **Multilíngue** | 22 idiomas totalmente traduzidos (EN, PT-BR + 20 locales adicionais) |
 | **Parsers testados** | Remoção de ANSI e parsing multi-formato cobertos por 31 testes unitários no CI |
 
 ### Requisitos

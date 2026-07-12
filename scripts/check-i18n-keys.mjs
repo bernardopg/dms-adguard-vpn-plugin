@@ -4,7 +4,6 @@ import { resolve } from "node:path";
 const root = resolve(process.cwd());
 const i18nDir = resolve(root, "i18n");
 const baseLocaleFile = "en.js";
-const fullParityLocales = new Set(["pt_BR.js"]);
 const requiredTranslatedKeys = new Set([
   "dns.leak_warning_title",
   "dns.leak_warning_body",
@@ -67,16 +66,12 @@ for (const localeFile of allLocaleFiles) {
     }
   }
 
-  if (fullParityLocales.has(localeFile) && missingInLocale.length > 0) {
+  if (missingInLocale.length > 0) {
     hasErrors = true;
     console.error(`- Missing keys in ${localeFile}:`);
     for (const key of missingInLocale) {
       console.error(`  - ${key}`);
     }
-  } else if (missingInLocale.length > 0) {
-    optionalLocaleWarnings.push(
-      `${localeFile}: ${missingInLocale.length} key(s) missing (fallback to en.js)`,
-    );
   }
 }
 

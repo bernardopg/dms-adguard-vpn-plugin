@@ -12,26 +12,26 @@ This plugin supports **community-driven translations**. Adding a new language is
 | --- | --- | --- |
 | `en.js` | English (US) | Base / fallback |
 | `pt_BR.js` | Português (BR) | Full translation |
-| `es_ES.js` | Español | Partial translation + fallback |
-| `zh_CN.js` | 中文 (简体) | Partial translation + fallback |
-| `hi_IN.js` | हिन्दी | Partial translation + fallback |
-| `ar.js` | العربية | Partial translation + fallback |
-| `bn_BD.js` | বাংলা | Partial translation + fallback |
-| `fr_FR.js` | Français | Partial translation + fallback |
-| `de_DE.js` | Deutsch | Partial translation + fallback |
-| `ja_JP.js` | 日本語 | Partial translation + fallback |
-| `ru_RU.js` | Русский | Partial translation + fallback |
-| `ko_KR.js` | 한국어 | Partial translation + fallback |
-| `id_ID.js` | Indonesia | Partial translation + fallback |
-| `tr_TR.js` | Türkçe | Partial translation + fallback |
-| `vi_VN.js` | Tiếng Việt | Partial translation + fallback |
-| `it_IT.js` | Italiano | Partial translation + fallback |
-| `pl_PL.js` | Polski | Partial translation + fallback |
-| `nl_NL.js` | Nederlands | Partial translation + fallback |
-| `fa_IR.js` | فارسی | Partial translation + fallback |
-| `th_TH.js` | ไทย | Partial translation + fallback |
-| `ur_PK.js` | اردو | Partial translation + fallback |
-| `ms_MY.js` | Bahasa Melayu | Partial translation + fallback |
+| `es_ES.js` | Español | Full translation |
+| `zh_CN.js` | 中文 (简体) | Full translation |
+| `hi_IN.js` | हिन्दी | Full translation |
+| `ar.js` | العربية | Full translation |
+| `bn_BD.js` | বাংলা | Full translation |
+| `fr_FR.js` | Français | Full translation |
+| `de_DE.js` | Deutsch | Full translation |
+| `ja_JP.js` | 日本語 | Full translation |
+| `ru_RU.js` | Русский | Full translation |
+| `ko_KR.js` | 한국어 | Full translation |
+| `id_ID.js` | Indonesia | Full translation |
+| `tr_TR.js` | Türkçe | Full translation |
+| `vi_VN.js` | Tiếng Việt | Full translation |
+| `it_IT.js` | Italiano | Full translation |
+| `pl_PL.js` | Polski | Full translation |
+| `nl_NL.js` | Nederlands | Full translation |
+| `fa_IR.js` | فارسی | Full translation |
+| `th_TH.js` | ไทย | Full translation |
+| `ur_PK.js` | اردو | Full translation |
+| `ms_MY.js` | Bahasa Melayu | Full translation |
 
 Each file exports a `translations` object keyed by **stable message IDs**.
 
@@ -68,9 +68,9 @@ node scripts/check-i18n-keys.mjs
 
 This script validates:
 
-- **strict parity** for `pt_BR.js` (all keys from `en.js` must exist)
-- **schema safety** for all other locales (no unknown keys)
-- optional locale fallback summary (missing keys use `en.js` automatically)
+- **strict parity** for every locale (all 179 keys from `en.js` must exist)
+- **schema safety** for all locales (no unknown keys)
+- since all locales are now fully translated, no English fallback is expected
 
 ### Step 5 — Open a PR
 
@@ -99,7 +99,7 @@ Este plugin aceita traduções mantidas pela comunidade. Para adicionar um idiom
 | --- | --- | --- |
 | `en.js` | Inglês (US) | Base / fallback |
 | `pt_BR.js` | Português (BR) | Tradução completa |
-| `es_ES.js`, `zh_CN.js`, `hi_IN.js`, `ar.js`, `bn_BD.js`, `fr_FR.js`, `de_DE.js`, `ja_JP.js`, `ru_RU.js`, `ko_KR.js`, `id_ID.js`, `tr_TR.js`, `vi_VN.js`, `it_IT.js`, `pl_PL.js`, `nl_NL.js`, `fa_IR.js`, `th_TH.js`, `ur_PK.js`, `ms_MY.js` | Idiomas adicionais | Tradução parcial com fallback para inglês |
+| `es_ES.js`, `zh_CN.js`, `hi_IN.js`, `ar.js`, `bn_BD.js`, `fr_FR.js`, `de_DE.js`, `ja_JP.js`, `ru_RU.js`, `ko_KR.js`, `id_ID.js`, `tr_TR.js`, `vi_VN.js`, `it_IT.js`, `pl_PL.js`, `nl_NL.js`, `fa_IR.js`, `th_TH.js`, `ur_PK.js`, `ms_MY.js` | Idiomas adicionais | Tradução completa |
 
 Cada arquivo exporta um objeto `translations` com IDs de mensagem estáveis.
 

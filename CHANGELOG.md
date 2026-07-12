@@ -9,6 +9,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+## [1.5.3] - 2026-07-12
+
+### Added
+
+- All 22 shipped locales are now fully translated: the 20 extended locales (es, zh, hi, ar, bn, fr, de, ja, ru, ko, id, tr, vi, it, pl, nl, fa, th, ur, ms) previously shipped as partial stubs with English fallback now carry a complete 179-key translation matching `en.js`, with existing correct strings preserved.
+- i18n checker now enforces strict key parity for every locale (not only `pt_BR`), so regressions in translation coverage fail CI.
+
+> **Full notes ->** [docs/releases/v1.5.3.md](./docs/releases/v1.5.3.md)
+
+---
+
 ## [1.5.2] - 2026-07-12
 
 ### Fixed
@@ -263,6 +274,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês acima é a fonte primária; esta seção fornece a tradução PT-BR.
 
 ### [Não lançado]
+
+### [1.5.3] - 2026-07-12
+
+#### Adicionado
+
+- Os 22 locales distribuídos agora estão totalmente traduzidos: os 20 locales estendidos (es, zh, hi, ar, bn, fr, de, ja, ru, ko, id, tr, vi, it, pl, nl, fa, th, ur, ms), que antes eram stubs parciais com fallback para o inglês, agora trazem a tradução completa de 179 chaves espelhando o `en.js`, preservando as strings corretas já existentes.
+- O checker i18n agora exige paridade estrita de chaves para todos os locales (não só `pt_BR`), então regressões de cobertura de tradução quebram o CI.
+
+> **Notas completas ->** [docs/releases/v1.5.3.md](./docs/releases/v1.5.3.md)
+
+---
 
 ### [1.5.2] - 2026-07-12
 
