@@ -4,6 +4,8 @@
 .DS_Store
 
 .claude/
+AGENTS.md
+CLAUDE.md
 .vscode/
 .qmlls.ini
 .headroom/
