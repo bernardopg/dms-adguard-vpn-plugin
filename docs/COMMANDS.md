@@ -51,6 +51,8 @@ These are triggered by user interaction. All timers are **suspended** during exe
 
 With systemd lifecycle enabled, the first three rows map respectively to `connect-fastest`, `connect-location "x"`, and `disconnect` on the fixed control helper. Arguments remain separate process arguments rather than shell text.
 
+The helper is expected to be **idempotent**: `connect-fastest` and `connect-location` must exit `0` without restarting the unit when the tunnel is already up on the requested target. A `systemctl restart` drops the interface for a few seconds and kills every in-flight connection, so an action that changes nothing must not reach `systemctl`. The reference implementation in [`scripts/adguardvpn-dms-control`](../scripts/adguardvpn-dms-control) compares the requested target against `/var/lib/adguardvpn-dms/location` and accepts `--force` to restart anyway.
+
 ### Connect Preflight
 
 Before any connect action, `prepareDisconnectedRuntime()` runs a small local shell preflight:
@@ -134,6 +136,8 @@ AdGuardVpnService.runCli(args)
 | `setDns(dns)` | `config set-dns <upstream>` | — |
 
 Com o ciclo de vida systemd ativo, as três primeiras linhas mapeiam respectivamente para `connect-fastest`, `connect-location "x"` e `disconnect` no helper fixo. Os argumentos continuam separados no processo, sem interpolação em shell.
+
+Espera-se que o helper seja **idempotente**: `connect-fastest` e `connect-location` devem sair com `0` sem reiniciar a unit quando o túnel já está de pé no destino pedido. Um `systemctl restart` derruba a interface por alguns segundos e mata toda conexão em curso, então uma ação que não muda nada não pode chegar ao `systemctl`. A implementação de referência em [`scripts/adguardvpn-dms-control`](../scripts/adguardvpn-dms-control) compara o destino pedido com `/var/lib/adguardvpn-dms/location` e aceita `--force` para reiniciar mesmo assim.
 
 ### Preflight de conexão
 
