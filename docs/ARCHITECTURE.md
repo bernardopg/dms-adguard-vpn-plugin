@@ -98,7 +98,7 @@ Connect actions use `prepareDisconnectedRuntime()` before invoking the CLI. The 
 
 All connect actions use `buildArgs()` to append `-y`, `--no-progress`, and IP stack flags consistently.
 
-When the opt-in `useSystemdService` setting is enabled, lifecycle operations use the fixed `adguardvpn-dms-control` helper through non-interactive `sudo`; all reads and configuration writes remain on `adguardBinary`.
+When the opt-in `useSystemdService` setting is enabled, lifecycle operations use the fixed `adguardvpn-dms-control` helper through non-interactive `sudo`; all reads and configuration writes remain on `adguardBinary`. The helper owns the idempotency decision, not the Service: a connect action for the target the tunnel is already on must not reach `systemctl restart`, which would drop the interface — and every connection riding it — for a few seconds. See [`scripts/adguardvpn-dms-control`](../scripts/adguardvpn-dms-control) for the reference implementation.
 
 ### Reconnect Logic
 

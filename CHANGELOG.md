@@ -9,6 +9,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+### Added
+
+- Reference implementation of the optional systemd lifecycle helper is now shipped as `scripts/adguardvpn-dms-control`, with install instructions in the README. The helper was previously only described in prose, so every `useSystemdService` user had to write it themselves.
+- `connect-fastest` and `connect-location` in that helper are **idempotent**: they exit `0` without touching `systemctl` when the unit is already active and `/var/lib/adguardvpn-dms/location` already matches the requested target. An unconditional `systemctl restart` drops the tunnel for a few seconds — NetworkManager flags the interface as unmanaged and systemd-resolved swaps DNS servers — which kills every in-flight connection, so a click that changes nothing was causing a real network outage. `--force` restores the unconditional restart for deliberately re-picking a server.
+
+### Documentation
+
+- README (EN + PT-BR), `docs/COMMANDS.md` and `docs/ARCHITECTURE.md` state that the helper owns the idempotency decision, and why: the Service cannot know whether a restart is destructive, the helper can.
+
 ## [1.5.3] - 2026-07-12
 
 ### Added
@@ -274,6 +283,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês acima é a fonte primária; esta seção fornece a tradução PT-BR.
 
 ### [Não lançado]
+
+#### Adicionado
+
+- A implementação de referência do helper opcional de ciclo de vida via systemd passa a ser distribuída em `scripts/adguardvpn-dms-control`, com instruções de instalação no README. Antes ele só era descrito em prosa, então todo usuário de `useSystemdService` tinha que escrevê-lo por conta própria.
+- `connect-fastest` e `connect-location` nesse helper são **idempotentes**: saem com `0` sem tocar no `systemctl` quando a unit já está ativa e `/var/lib/adguardvpn-dms/location` já corresponde ao destino pedido. Um `systemctl restart` incondicional derruba o túnel por alguns segundos — o NetworkManager marca a interface como `unmanaged` e o systemd-resolved troca de servidor DNS — o que mata toda conexão em curso, ou seja, um clique que não muda nada estava causando uma queda de rede real. `--force` restaura o restart incondicional para reescolher servidor de propósito.
+
+#### Documentação
+
+- README (EN + PT-BR), `docs/COMMANDS.md` e `docs/ARCHITECTURE.md` deixam explícito que a decisão de idempotência é do helper, e por quê: o Service não tem como saber se um restart é destrutivo, o helper tem.
 
 ### [1.5.3] - 2026-07-12
 

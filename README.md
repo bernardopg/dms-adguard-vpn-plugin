@@ -59,6 +59,28 @@ that mode connect and disconnect actions delegate the persistent tunnel to a
 root systemd service rather than leaving it in the DMS cgroup. Keep this opt-in
 unless the matching service and control wrapper have been installed.
 
+A reference implementation ships in [`scripts/adguardvpn-dms-control`](./scripts/adguardvpn-dms-control):
+
+```bash
+sudo install -m 755 -o root -g root \
+  scripts/adguardvpn-dms-control /usr/local/sbin/adguardvpn-dms-control
+```
+
+Then grant the desktop user a `NOPASSWD` sudoers rule for that exact path — the
+plugin always calls it through `sudo -n`, so an interactive prompt makes the
+action fail silently.
+
+> **Write your own helper?** Make `connect-fastest` and `connect-location`
+> **idempotent.** `systemctl restart` tears the tunnel down for a few seconds:
+> NetworkManager flags the interface as unmanaged, systemd-resolved swaps DNS
+> servers, and every in-flight connection dies with it — downloads, SSH, long
+> HTTP sessions. A helper that restarts unconditionally turns a no-op click
+> ("connect to the location I'm already on") into a real network outage. The
+> reference implementation exits `0` without restarting when the unit is
+> already active and `/var/lib/adguardvpn-dms/location` already matches the
+> requested target; `--force` restores the unconditional behaviour for
+> deliberately re-picking a server.
+
 ### 1. Clone into DMS plugins directory
 
 ```bash
@@ -317,6 +339,36 @@ dms ipc plugins enable adguardVPplugin
 ```
 
 Depois, abra **DMS Settings → Widgets** e adicione **AdGuard VPN** à barra.
+
+#### Túnel gerenciado por systemd (opcional)
+
+Por padrão o plugin chama o `adguardvpn-cli` direto e funciona sem nenhum
+serviço extra. Configurações avançadas podem ativar `useSystemdService: true` e
+fornecer `/usr/local/sbin/adguardvpn-dms-control`; nesse modo, conectar e
+desconectar delegam o túnel persistente a um serviço systemd de root em vez de
+deixá-lo no cgroup do DMS. Há uma implementação de referência em
+[`scripts/adguardvpn-dms-control`](./scripts/adguardvpn-dms-control):
+
+```bash
+sudo install -m 755 -o root -g root \
+  scripts/adguardvpn-dms-control /usr/local/sbin/adguardvpn-dms-control
+```
+
+Depois conceda ao usuário do desktop uma regra `NOPASSWD` no sudoers para esse
+caminho exato — o plugin sempre chama por `sudo -n`, então um prompt
+interativo faz a ação falhar em silêncio.
+
+> **Vai escrever seu próprio helper?** Faça `connect-fastest` e
+> `connect-location` serem **idempotentes**. O `systemctl restart` derruba o
+> túnel por alguns segundos: o NetworkManager marca a interface como
+> `unmanaged`, o systemd-resolved troca de servidor DNS e toda conexão em curso
+> morre junto — downloads, SSH, sessões HTTP longas. Um helper que reinicia
+> incondicionalmente transforma um clique que não muda nada ("conectar na
+> localização em que já estou") numa queda de rede real. A implementação de
+> referência sai com `0` sem reiniciar quando a unit já está ativa e
+> `/var/lib/adguardvpn-dms/location` já corresponde ao destino pedido;
+> `--force` restaura o comportamento incondicional para reescolher servidor de
+> propósito.
 
 ### Configurações
 

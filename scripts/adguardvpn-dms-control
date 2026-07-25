@@ -1,0 +1,97 @@
+#!/bin/sh
+# EN: Reference implementation of the optional systemd lifecycle helper used
+#     when the plugin setting `useSystemdService` is enabled. Install it as
+#     root-owned /usr/local/sbin/adguardvpn-dms-control (mode 0755) and grant
+#     the desktop user a NOPASSWD sudoers rule for this exact path.
+# PT-BR: Implementação de referência do helper opcional de ciclo de vida via
+#     systemd, usado quando a configuração `useSystemdService` está ativa.
+#     Instale como /usr/local/sbin/adguardvpn-dms-control (root, modo 0755) e
+#     conceda ao usuário do desktop uma regra NOPASSWD no sudoers para este
+#     caminho exato.
+set -eu
+
+STATE_DIR=/var/lib/adguardvpn-dms
+LOCATION_FILE=$STATE_DIR/location
+UNIT=adguardvpn-svc.service
+
+usage() {
+    echo "usage: $0 {connect-fastest [--force]|connect-location <location> [--force]|disconnect|status}" >&2
+    exit 64
+}
+
+# EN: `systemctl restart` tears the tunnel down for a few seconds:
+#     NetworkManager flags the interface as unmanaged, systemd-resolved swaps
+#     DNS servers, and EVERY in-flight connection dies with it (downloads, SSH,
+#     long-lived HTTP sessions). When the request changes nothing — already
+#     connected, same target — that restart is destructive for no reason.
+#     `--force` keeps the old unconditional behaviour for re-picking a server.
+# PT-BR: `systemctl restart` derruba o túnel por alguns segundos: o
+#     NetworkManager marca a interface como unmanaged, o systemd-resolved troca
+#     de servidor DNS e TODA conexão em curso morre junto (downloads, SSH,
+#     sessões HTTP longas). Quando o pedido não muda nada — já conectado, mesmo
+#     destino — o restart é destrutivo à toa. `--force` mantém o comportamento
+#     antigo para quem quer reescolher o servidor.
+already_at() {
+    # EN: $1 = expected LOCATION_FILE contents ("" means fastest mode).
+    # PT-BR: $1 = conteúdo esperado de LOCATION_FILE ("" = modo fastest).
+    systemctl is-active --quiet "$UNIT" || return 1
+    [ -f "$LOCATION_FILE" ] || return 1
+    [ "$(cat "$LOCATION_FILE" 2>/dev/null || true)" = "$1" ]
+}
+
+[ "$#" -ge 1 ] || usage
+
+case "$1" in
+    connect-fastest)
+        force=0
+        case "${2-}" in
+            --force) force=1 ;;
+            '') ;;
+            *) usage ;;
+        esac
+        [ "$#" -le 2 ] || usage
+        install -d -m 700 "$STATE_DIR"
+        if [ "$force" -eq 0 ] && already_at ''; then
+            exit 0
+        fi
+        : > "$LOCATION_FILE"
+        chmod 600 "$LOCATION_FILE"
+        exec systemctl restart "$UNIT"
+        ;;
+    connect-location)
+        [ "$#" -ge 2 ] || usage
+        force=0
+        case "${3-}" in
+            --force) force=1 ;;
+            '') ;;
+            *) usage ;;
+        esac
+        [ "$#" -le 3 ] || usage
+        # EN: Reject empty/non-printable locations before they reach the unit.
+        # PT-BR: Rejeita localizações vazias/não imprimíveis antes da unit.
+        case "$2" in
+            ''|*[![:print:]]*)
+                echo "invalid location" >&2
+                exit 64
+                ;;
+        esac
+        install -d -m 700 "$STATE_DIR"
+        if [ "$force" -eq 0 ] && already_at "$2"; then
+            exit 0
+        fi
+        umask 077
+        printf '%s\n' "$2" > "$LOCATION_FILE"
+        exec systemctl restart "$UNIT"
+        ;;
+    disconnect)
+        [ "$#" -eq 1 ] || usage
+        exec systemctl stop "$UNIT"
+        ;;
+    status)
+        [ "$#" -eq 1 ] || usage
+        exec systemctl is-active "$UNIT"
+        ;;
+    *)
+        usage
+        ;;
+esac
