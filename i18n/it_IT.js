@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "Stato non riconosciuto: {detail}",
     "status.disconnected": "Disconnesso",
     "status.locations_parse_failed": "Impossibile analizzare l'elenco delle posizioni dall'output della CLI",
+    "status.locations_command_failed": "adguardvpn-cli non è riuscito a elencare le posizioni (codice di uscita {code})",
 
     "toast.fastest_selected": "Posizione pi\u00f9 veloce selezionata",
     "toast.location_empty": "La posizione \u00e8 vuota",

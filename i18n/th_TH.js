@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "ไม่รู้จักสถานะ: {detail}",
     "status.disconnected": "ตัดการเชื่อมต่อ",
     "status.locations_parse_failed": "ไม่สามารถแยกแยะรายการตำแหน่งจากเอาต์พุต CLI ได้",
+    "status.locations_command_failed": "adguardvpn-cli ไม่สามารถแสดงรายการตำแหน่งได้ (โค้ดออก {code})",
 
     "toast.fastest_selected": "เลือกตำแหน่งที่เร็วที่สุดแล้ว",
     "toast.location_empty": "ตำแหน่งว่างเปล่า",

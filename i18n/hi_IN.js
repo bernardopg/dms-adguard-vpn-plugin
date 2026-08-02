@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "अपरिचित स्थिति: {detail}",
     "status.disconnected": "डिस्कनेक्टेड",
     "status.locations_parse_failed": "CLI आउटपुट से लोकेशन सूची पार्स नहीं की जा सकी",
+    "status.locations_command_failed": "adguardvpn-cli लोकेशन सूची नहीं बना सका (एग्ज़िट कोड {code})",
 
     "toast.fastest_selected": "सबसे तेज़ लोकेशन चुना गया",
     "toast.location_empty": "लोकेशन खाली है",

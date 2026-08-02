@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "인식할 수 없는 상태: {detail}",
     "status.disconnected": "연결 해제됨",
     "status.locations_parse_failed": "CLI 출력에서 위치 목록을 분석할 수 없습니다",
+    "status.locations_command_failed": "adguardvpn-cli가 위치 목록을 가져오지 못했습니다 (종료 코드 {code})",
 
     "toast.fastest_selected": "가장 빠른 위치가 선택되었습니다",
     "toast.location_empty": "위치가 비어 있습니다",

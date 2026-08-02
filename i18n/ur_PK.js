@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "نامانوس حالت: {detail}",
     "status.disconnected": "منقطع",
     "status.locations_parse_failed": "CLI آؤٹ پٹ سے مقامات کی فہرست پارس نہیں کی جا سکی",
+    "status.locations_command_failed": "adguardvpn-cli مقامات کی فہرست حاصل نہیں کر سکا (ایگزٹ کوڈ {code})",
 
     "toast.fastest_selected": "تیز ترین مقام منتخب کیا گیا",
     "toast.location_empty": "مقام خالی ہے",

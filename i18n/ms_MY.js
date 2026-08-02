@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "Status tidak dikenali: {detail}",
     "status.disconnected": "Diputuskan",
     "status.locations_parse_failed": "Tidak dapat menghuraikan senarai lokasi daripada output CLI",
+    "status.locations_command_failed": "adguardvpn-cli gagal menyenaraikan lokasi (kod keluar {code})",
 
     "toast.fastest_selected": "Lokasi terpantas dipilih",
     "toast.location_empty": "Lokasi kosong",

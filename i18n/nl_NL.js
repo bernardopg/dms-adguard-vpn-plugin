@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "Niet-herkende status: {detail}",
     "status.disconnected": "Verbroken",
     "status.locations_parse_failed": "Kon de locatielijst niet verwerken uit de CLI-uitvoer",
+    "status.locations_command_failed": "adguardvpn-cli kon de locaties niet opvragen (afsluitcode {code})",
 
     "toast.fastest_selected": "Snelste locatie geselecteerd",
     "toast.location_empty": "Locatie is leeg",

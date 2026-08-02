@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "Неопознанный статус: {detail}",
     "status.disconnected": "Отключено",
     "status.locations_parse_failed": "Не удалось разобрать список локаций из вывода CLI",
+    "status.locations_command_failed": "adguardvpn-cli не смог получить список локаций (код выхода {code})",
 
     "toast.fastest_selected": "Выбрана самая быстрая локация",
     "toast.location_empty": "Локация пуста",

@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "حالة غير معروفة: {detail}",
     "status.disconnected": "غير متصل",
     "status.locations_parse_failed": "تعذر تحليل قائمة المواقع من مخرجات CLI",
+    "status.locations_command_failed": "فشل adguardvpn-cli في سرد المواقع (رمز الخروج {code})",
 
     "toast.fastest_selected": "تم اختيار أسرع موقع",
     "toast.location_empty": "الموقع فارغ",

@@ -9,14 +9,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-08-02
+
 ### Added
 
 - Reference implementation of the optional systemd lifecycle helper is now shipped as `scripts/adguardvpn-dms-control`, with install instructions in the README. The helper was previously only described in prose, so every `useSystemdService` user had to write it themselves.
 - `connect-fastest` and `connect-location` in that helper are **idempotent**: they exit `0` without touching `systemctl` when the unit is already active and `/var/lib/adguardvpn-dms/location` already matches the requested target. An unconditional `systemctl restart` drops the tunnel for a few seconds — NetworkManager flags the interface as unmanaged and systemd-resolved swaps DNS servers — which kills every in-flight connection, so a click that changes nothing was causing a real network outage. `--force` restores the unconditional restart for deliberately re-picking a server.
 
+### Fixed
+
+- Background location refresh no longer hammers a crashing CLI. `adguardvpn-cli list-locations` segfaults intermittently (upstream bug); at the previous cadence of `refreshIntervalSec × 6` (min 30 s) that produced a coredump every few minutes and no data. The poll is now `refreshIntervalSec × 60` (min 15 min) and doubles on every failed refresh up to 1 h, resetting on the first success. The location list is near-static, so nothing is lost, and the popout's manual refresh is unchanged.
+- A failed or unparseable `list-locations` no longer blanks the location picker: `locations` is only replaced by a successful parse, so the last known-good list survives a crashed CLI.
+- A crashed `list-locations` is now reported instead of being silent: a segfault prints nothing, so `lastError` stayed empty. New key `status.locations_command_failed` carries the exit code (all 22 locales).
+
 ### Documentation
 
 - README (EN + PT-BR), `docs/COMMANDS.md` and `docs/ARCHITECTURE.md` state that the helper owns the idempotency decision, and why: the Service cannot know whether a restart is destructive, the helper can.
+- `docs/ARCHITECTURE.md` documents the locations poll cadence, its failure backoff, and why the list survives a failed refresh.
+
+> **Full notes ->** [docs/releases/v1.6.0.md](./docs/releases/v1.6.0.md)
 
 ## [1.5.3] - 2026-07-12
 
@@ -284,14 +295,25 @@ Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês ac
 
 ### [Não lançado]
 
+### [1.6.0] - 2026-08-02
+
 #### Adicionado
 
 - A implementação de referência do helper opcional de ciclo de vida via systemd passa a ser distribuída em `scripts/adguardvpn-dms-control`, com instruções de instalação no README. Antes ele só era descrito em prosa, então todo usuário de `useSystemdService` tinha que escrevê-lo por conta própria.
 - `connect-fastest` e `connect-location` nesse helper são **idempotentes**: saem com `0` sem tocar no `systemctl` quando a unit já está ativa e `/var/lib/adguardvpn-dms/location` já corresponde ao destino pedido. Um `systemctl restart` incondicional derruba o túnel por alguns segundos — o NetworkManager marca a interface como `unmanaged` e o systemd-resolved troca de servidor DNS — o que mata toda conexão em curso, ou seja, um clique que não muda nada estava causando uma queda de rede real. `--force` restaura o restart incondicional para reescolher servidor de propósito.
 
+#### Corrigido
+
+- O refresh automático de localizações deixa de martelar um CLI que quebra. O `adguardvpn-cli list-locations` sofre segfault intermitente (bug do upstream); na cadência anterior de `refreshIntervalSec × 6` (mín. 30 s) isso gerava um coredump a cada poucos minutos e nenhum dado. O poll passa a ser `refreshIntervalSec × 60` (mín. 15 min) e dobra a cada refresh falho até 1 h, voltando ao normal no primeiro sucesso. A lista de localizações é quase estática, então nada se perde, e o refresh manual do popout permanece igual.
+- Um `list-locations` que falha ou vem ilegível não zera mais o seletor de localizações: `locations` só é substituída por um parse bem-sucedido, então a última lista válida sobrevive ao CLI quebrado.
+- Um `list-locations` que quebra agora é reportado em vez de ficar silencioso: um segfault não imprime nada, então o `lastError` continuava vazio. A chave nova `status.locations_command_failed` mostra o código de saída (nos 22 locales).
+
 #### Documentação
 
 - README (EN + PT-BR), `docs/COMMANDS.md` e `docs/ARCHITECTURE.md` deixam explícito que a decisão de idempotência é do helper, e por quê: o Service não tem como saber se um restart é destrutivo, o helper tem.
+- `docs/ARCHITECTURE.md` documenta a cadência do poll de localizações, o backoff em caso de falha e por que a lista sobrevive a um refresh falho.
+
+> **Notas completas ->** [docs/releases/v1.6.0.md](./docs/releases/v1.6.0.md)
 
 ### [1.5.3] - 2026-07-12
 

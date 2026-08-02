@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "无法识别的状态：{detail}",
     "status.disconnected": "未连接",
     "status.locations_parse_failed": "无法从 CLI 输出中解析节点列表",
+    "status.locations_command_failed": "adguardvpn-cli 获取节点列表失败（退出码 {code}）",
 
     "toast.fastest_selected": "已选择最快节点",
     "toast.location_empty": "节点为空",

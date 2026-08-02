@@ -80,6 +80,7 @@ Item {
     readonly property string controlSocketPath: "$HOME/.local/share/adguardvpn-cli/vpn.socket"
 
     property var locations: []
+    property int locationsFailureStreak: 0
     property string lastError: ""
     property string lastErrorDebug: ""
     property string lastStatusRaw: ""
@@ -297,6 +298,17 @@ Item {
         return seconds * 1000;
     }
 
+    // The locations list is near-static (ping columns drift, entries do not), so
+    // there is nothing to gain from a fast poll — and plenty to lose: the CLI
+    // segfaults intermittently on `list-locations`, and each crash costs a
+    // coredump and an empty result.  Base cadence is minutes, and every failed
+    // refresh doubles it up to an hour so a crashing CLI stops being hammered.
+    // The user-triggered refresh in the popout is unaffected.
+    function locationsPollIntervalMs() {
+        const base = Math.max(900, refreshIntervalSec * 60) * 1000;
+        return Math.min(3600000, base * Math.pow(2, Math.min(4, locationsFailureStreak)));
+    }
+
     onCliAvailableChanged: {
         statusTimer.interval = statusPollIntervalMs();
     }
@@ -304,7 +316,7 @@ Item {
     function restartTimers() {
         statusTimer.interval = statusPollIntervalMs();
         metadataTimer.interval = Math.max(15, refreshIntervalSec * 3) * 1000;
-        locationsTimer.interval = Math.max(30, refreshIntervalSec * 6) * 1000;
+        locationsTimer.interval = locationsPollIntervalMs();
 
         if (!statusTimer.running) {
             statusTimer.start();
@@ -535,18 +547,29 @@ Item {
         const clean = cleanOutput(stdout);
 
         if (exitCode !== 0) {
-            if (clean) {
-                lastError = clean;
-            }
+            // A segfault (139) prints nothing, so `clean` is empty and the
+            // failure would otherwise be invisible.  Keep the previous list.
+            locationsFailureStreak += 1;
+            locationsTimer.interval = locationsPollIntervalMs();
+            lastError = clean || t("status.locations_command_failed", "adguardvpn-cli failed to list locations (exit {code})", {
+                    code: exitCode
+                });
             return;
         }
 
         const parsed = AdGuardVpnParsers.parseLocationsOutput(clean);
 
         if (parsed.parseFailed) {
+            // Unparseable output is a failed refresh too: keep the last good
+            // list instead of blanking the picker.
+            locationsFailureStreak += 1;
+            locationsTimer.interval = locationsPollIntervalMs();
             lastError = t("status.locations_parse_failed", "Could not parse locations list from CLI output");
+            return;
         }
 
+        locationsFailureStreak = 0;
+        locationsTimer.interval = locationsPollIntervalMs();
         locations = parsed.locations;
         lastLocationsRefreshMs = Date.now();
     }

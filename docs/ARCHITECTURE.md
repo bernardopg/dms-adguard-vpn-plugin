@@ -83,9 +83,11 @@ The plugin is organized into **four layers**, each with a single responsibility:
 | --- | --- | --- |
 | `statusTimer` | `refreshIntervalSec` (default 8 s) | VPN connection state |
 | `metadataTimer` | `refreshIntervalSec × 3` (min 15 s) | Config + license info |
-| `locationsTimer` | `refreshIntervalSec × 6` (min 30 s) | Ranked server locations |
+| `locationsTimer` | `refreshIntervalSec × 60` (min 15 min, doubled per failed refresh up to 1 h) | Ranked server locations |
 
 During write actions (`runAction`), all timers are **suspended** to avoid conflicting reads, and **resumed** after completion.
+
+`locationsTimer` is the slow one on purpose: the location list barely changes, while `adguardvpn-cli list-locations` segfaults intermittently — every crash costs a coredump and returns nothing. `locationsPollIntervalMs()` therefore keeps the base cadence in minutes and doubles it on each failed refresh (`locationsFailureStreak`), resetting on the first success. Failed refreshes never overwrite `locations`, so the picker keeps the last good list instead of blanking. The popout's manual refresh is unaffected.
 
 ### Action Dispatcher
 

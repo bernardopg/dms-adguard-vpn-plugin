@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "وضعیت ناشناخته: {detail}",
     "status.disconnected": "قطع شده",
     "status.locations_parse_failed": "تجزیه فهرست مکان‌ها از خروجی CLI امکان‌پذیر نبود",
+    "status.locations_command_failed": "adguardvpn-cli نتوانست مکان‌ها را فهرست کند (کد خروج {code})",
 
     "toast.fastest_selected": "سریع‌ترین مکان انتخاب شد",
     "toast.location_empty": "مکان خالی است",

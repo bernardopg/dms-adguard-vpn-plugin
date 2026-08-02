@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "অচেনা স্ট্যাটাস: {detail}",
     "status.disconnected": "সংযোগ বিচ্ছিন্ন",
     "status.locations_parse_failed": "CLI আউটপুট থেকে লোকেশন তালিকা পার্স করা যাচ্ছে না",
+    "status.locations_command_failed": "adguardvpn-cli লোকেশন তালিকা করতে ব্যর্থ হয়েছে (এক্সিট কোড {code})",
 
     "toast.fastest_selected": "সবচেয়ে দ্রুত লোকেশন নির্বাচিত হয়েছে",
     "toast.location_empty": "লোকেশন খালি",

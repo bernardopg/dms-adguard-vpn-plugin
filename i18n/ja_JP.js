@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "認識できないステータス: {detail}",
     "status.disconnected": "未接続",
     "status.locations_parse_failed": "CLI の出力からロケーション一覧を解析できませんでした",
+    "status.locations_command_failed": "adguardvpn-cli がロケーション一覧の取得に失敗しました (終了コード {code})",
 
     "toast.fastest_selected": "最速のロケーションを選択しました",
     "toast.location_empty": "ロケーションが空です",

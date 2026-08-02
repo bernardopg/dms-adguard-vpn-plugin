@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "Trạng thái không được nhận diện: {detail}",
     "status.disconnected": "Đã ngắt kết nối",
     "status.locations_parse_failed": "Không thể phân tích danh sách vị trí từ đầu ra CLI",
+    "status.locations_command_failed": "adguardvpn-cli không thể liệt kê vị trí (mã thoát {code})",
 
     "toast.fastest_selected": "Đã chọn vị trí nhanh nhất",
     "toast.location_empty": "Vị trí đang trống",

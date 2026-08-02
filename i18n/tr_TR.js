@@ -14,6 +14,7 @@ var translations = ({
     "status.unrecognized": "Tanınmayan durum: {detail}",
     "status.disconnected": "Bağlantı kesildi",
     "status.locations_parse_failed": "Konum listesi CLI çıktısından ayrıştırılamadı",
+    "status.locations_command_failed": "adguardvpn-cli konumları listeleyemedi (çıkış kodu {code})",
 
     "toast.fastest_selected": "En hızlı konum seçildi",
     "toast.location_empty": "Konum boş",
