@@ -53,3 +53,25 @@ jobs:
 
       - name: Validate QML syntax / Validar sintaxe QML
         run: bash scripts/validate-qml.sh
+
+  audit:
+    name: Dependency audit / Auditoria de dependências
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "20"
+          cache: npm
+
+      # EN: Surface (don't block) high/critical advisories — Dependabot opens the fix PRs.
+      #     Remove `continue-on-error` to turn this into a hard gate.
+      # PT-BR: Sinaliza (sem bloquear) alertas alto/críticos — o Dependabot abre os PRs de correção.
+      #        Remova `continue-on-error` para tornar isto num bloqueio obrigatório.
+      - name: Audit dependencies / Auditar dependências
+        continue-on-error: true
+        run: npm audit --audit-level=high

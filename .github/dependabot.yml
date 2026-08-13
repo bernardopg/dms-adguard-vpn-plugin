@@ -1,0 +1,29 @@
+# Dependabot configuration for the quality dev-dependency tree.
+# EN: Group all npm security updates into a single PR so transitive fixes
+#     (e.g. js-yaml, brace-expansion) land together instead of one-by-one.
+# PT-BR: Agrupa todas as atualizações de segurança do npm num único PR para
+#        que correções transitivas (ex.: js-yaml, brace-expansion) cheguem juntas.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore(deps)
+    labels:
+      - dependencies
+    groups:
+      # EN: Every security update (direct or transitive) in one PR.
+      # PT-BR: Toda atualização de segurança (direta ou transitiva) num único PR.
+      security:
+        applies-to: security-updates
+      # EN: Routine minor/patch bumps bundled; majors get their own PR.
+      # PT-BR: Bumps menores/patch agrupados; majors ganham PR próprio.
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - minor
+          - patch
