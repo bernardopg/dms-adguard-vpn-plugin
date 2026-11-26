@@ -9,6 +9,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-11-26
+
+### Changed
+
+- The widget now uses the `qs.DCommon.Widgets` components (`DIcon`, `DFlickable`) instead of the deprecated `DankIcon` and `DankFlickable` shims. DankMaterialShell 2.x / Dux Shell logs a deprecation error for every shim instance and has announced their removal, after which the widget would fail to load.
+- Minimum shell version raised to `>= 2.0.0`, the first release that ships `qs.DCommon.Widgets`.
+
+> **Full notes ->** [docs/releases/v1.7.0.md](./docs/releases/v1.7.0.md)
+
 ## [1.6.0] - 2026-08-02
 
 ### Added
@@ -294,6 +303,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Sem
 Todas as mudanças relevantes deste projeto são documentadas aqui. O inglês acima é a fonte primária; esta seção fornece a tradução PT-BR.
 
 ### [Não lançado]
+
+### [1.7.0] - 2026-11-26
+
+#### Alterado
+
+- O widget passou a usar os componentes de `qs.DCommon.Widgets` (`DIcon`, `DFlickable`) no lugar dos shims obsoletos `DankIcon` e `DankFlickable`. O DankMaterialShell 2.x / Dux Shell registra um erro de depreciação para cada instância de shim e anunciou a remoção deles; depois disso o widget deixaria de carregar.
+- Versão mínima do shell elevada para `>= 2.0.0`, a primeira que traz `qs.DCommon.Widgets`.
 
 ### [1.6.0] - 2026-08-02
 

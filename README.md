@@ -7,8 +7,8 @@
 
 <p align="center">
   <a href="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml"><img src="https://github.com/bernardopg/dms-adguard-vpn-plugin/actions/workflows/quality.yml/badge.svg" alt="Quality CI" /></a>
-  <img src="https://img.shields.io/badge/version-1.6.0-e8924a" alt="Version 1.6.0" />
-  <img src="https://img.shields.io/badge/DankMaterialShell-%E2%89%A5%201.4.0-5a6a8a" alt="DMS >= 1.4.0" />
+  <img src="https://img.shields.io/badge/version-1.7.0-e8924a" alt="Version 1.7.0" />
+  <img src="https://img.shields.io/badge/DankMaterialShell-%E2%89%A5%202.0.0-5a6a8a" alt="DMS >= 2.0.0" />
   <img src="https://img.shields.io/badge/i18n-22%20locales-3b82f6" alt="22 locales" />
   <img src="https://img.shields.io/badge/parser%20tests-31%20passing-2ea44f" alt="31 parser tests" />
   <img src="https://img.shields.io/badge/license-MIT-2ea44f" alt="MIT License" />
@@ -42,7 +42,7 @@
 
 | Dependency        | Version                                                                             |
 | ----------------- | ----------------------------------------------------------------------------------- |
-| DankMaterialShell | `>= 1.4.0`                                                                          |
+| DankMaterialShell | `>= 2.0.0`                                                                          |
 | `adguardvpn-cli`  | Any recent version — [install guide](https://github.com/AdguardTeam/AdGuardVPNCLI/) |
 | AdGuard account   | Logged in (`adguardvpn-cli login`)                                                  |
 
@@ -324,7 +324,7 @@ Submit to the [DMS Plugin Registry](https://github.com/AvengeMedia/dms-plugin-re
 
 | Dependência | Versão |
 | --- | --- |
-| DankMaterialShell | `>= 1.4.0` |
+| DankMaterialShell | `>= 2.0.0` |
 | `adguardvpn-cli` | Qualquer versão recente; veja o guia oficial de instalação |
 | Conta AdGuard | Sessão iniciada com `adguardvpn-cli login` |
 
