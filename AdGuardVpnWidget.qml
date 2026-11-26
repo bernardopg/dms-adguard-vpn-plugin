@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.Common
 import qs.Services
 import qs.Widgets
+import qs.DCommon.Widgets
 import qs.Modules.Plugins
 
 PluginComponent {
@@ -273,7 +274,7 @@ PluginComponent {
                 radius: width / 2
                 color: buttonRoot.emphasized ? Theme.withAlpha(Theme.primary, 0.18) : Theme.withAlpha(Theme.surfaceText, 0.08)
 
-                DankIcon {
+                DIcon {
                     anchors.centerIn: parent
                     name: buttonRoot.iconName
                     size: compact ? 14 : 16
@@ -353,7 +354,7 @@ PluginComponent {
                 border.width: 1
                 border.color: Theme.withAlpha(root.heroAccent, 0.22)
 
-                DankIcon {
+                DIcon {
                     anchors.centerIn: parent
                     name: emptyRoot.actionIcon
                     size: 18
@@ -582,7 +583,7 @@ PluginComponent {
         Row {
             spacing: Theme.spacingS
 
-            DankIcon {
+            DIcon {
                 name: root.barIconName
                 size: root.iconSize
                 color: root.barIconColor
@@ -613,7 +614,7 @@ PluginComponent {
         Column {
             spacing: Theme.spacingXS
 
-            DankIcon {
+            DIcon {
                 name: root.barIconName
                 size: root.iconSize
                 color: root.barIconColor
@@ -642,7 +643,7 @@ PluginComponent {
                 width: parent.width
                 implicitHeight: root.popoutHeight - popout.headerHeight - popout.detailsHeight - Theme.spacingXL
 
-                DankFlickable {
+                DFlickable {
                     id: contentFlick
                     anchors.fill: parent
                     anchors.leftMargin: Theme.spacingM
@@ -721,7 +722,7 @@ PluginComponent {
                                         border.width: 1
                                         border.color: Theme.withAlpha(root.heroAccent, 0.28)
 
-                                        DankIcon {
+                                        DIcon {
                                             anchors.centerIn: parent
                                             name: root.barIconName
                                             size: 22
@@ -1345,7 +1346,7 @@ PluginComponent {
                                                     Keys.onEnterPressed: AdGuardVpnService.toggleFavoriteLocation(locationCard.locationItem)
                                                     Keys.onSpacePressed: AdGuardVpnService.toggleFavoriteLocation(locationCard.locationItem)
 
-                                                    DankIcon {
+                                                    DIcon {
                                                         anchors.centerIn: parent
                                                         name: locationCard.favorite ? "star" : "star_border"
                                                         size: 16
